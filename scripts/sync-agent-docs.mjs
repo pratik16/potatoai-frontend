@@ -34,6 +34,11 @@ for (const { src, dest } of files) {
 }
 
 if (copied === 0) {
-  console.warn('[sync-agent-docs] no files copied — is this the monorepo root?');
+  const allCommitted = files.every(({ dest }) => fs.existsSync(path.join(outDir, dest)));
+  if (allCommitted) {
+    console.log('[sync-agent-docs] using committed public/team-agents (standalone repo or CI)');
+    process.exit(0);
+  }
+  console.warn('[sync-agent-docs] no sources and missing public/team-agents — run from monorepo root or commit agent docs');
   process.exit(1);
 }
