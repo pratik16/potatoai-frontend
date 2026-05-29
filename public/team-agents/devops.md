@@ -86,9 +86,9 @@ flowchart TB
 |---|--------|------------|
 | Compose file | `docker-compose.yml` (+ optional `docker-compose.override.yml`) | `docker-compose.prod.yml` |
 | Env file | `docker/.env` | `docker/.env.production` (server only) |
-| Frontend | Build from `../react` in container :4200 | Pre-built `../frontend-dist` |
+| Frontend | Build from `../react` in container :3000 | Pre-built `../frontend-dist` |
 | Backend | Volume mount `../backend` | Baked in image + `../backend/public` for nginx |
-| Edge | No Caddy (ports 4200, 8000 exposed) | Caddy on 80/443 |
+| Edge | No Caddy (ports 3000, 8000 exposed) | Caddy on 80/443 |
 | Dev tools | Mailhog, pgAdmin, mongo-express | **Not** in prod compose |
 
 Local frontend proxy: `docker/nginx/frontend.conf` → `proxy_pass http://nginx:80` for `/api/`.
