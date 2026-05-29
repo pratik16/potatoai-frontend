@@ -6,7 +6,8 @@
   "scripts": {
     "sync:agents": "node scripts/sync-agent-docs.mjs",
     "dev": "npm run sync:agents && vite",
-    "build": "npm run sync:agents && tsc && vite build",
+    "build:ci": "tsc && vite build",
+    "build": "npm run sync:agents && npm run build:ci",
     "preview": "vite preview",
     "lint": "eslint src --ext ts,tsx"
   },

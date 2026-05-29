@@ -18,6 +18,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Validate deployment secrets
+        run: |
+          test -n "${{ secrets.EC2_HOST }}" || { echo "Missing repository secret: EC2_HOST"; exit 1; }
+          test -n "${{ secrets.EC2_USER }}" || { echo "Missing repository secret: EC2_USER"; exit 1; }
+          test -n "${{ secrets.EC2_SSH_KEY }}" || { echo "Missing repository secret: EC2_SSH_KEY"; exit 1; }
+
       - name: Setup Node
         uses: actions/setup-node@v6
         with:
@@ -27,8 +33,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build
-        run: npm run build
+      - name: Typecheck and build
+        run: npm run build:ci
+
+      - name: Verify build output
+        run: |
+          test -f dist/index.html || { echo "dist/index.html missing"; exit 1; }
+          test -d dist/assets || { echo "dist/assets missing"; exit 1; }
+          ls -la dist/
 
       - name: Package build
         run: tar -czf frontend-dist.tar.gz -C dist .
@@ -48,13 +60,19 @@ jobs:
       - name: Publish build on EC2
         run: |
           ssh -i ~/.ssh/potatoaihub_deploy_key "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" <<'EOF'
-          set -e
-          mkdir -p ~/potatoaihub
+          set -eux
+          mkdir -p ~/potatoaihub/frontend-dist
           rm -rf ~/potatoaihub/frontend-dist
           mkdir -p ~/potatoaihub/frontend-dist
           tar -xzf /tmp/potatoai-frontend-dist.tar.gz -C ~/potatoaihub/frontend-dist
           rm -f /tmp/potatoai-frontend-dist.tar.gz
-          cd ~/potatoaihub/docker
-          git pull origin master
-          docker compose --env-file .env.production -f docker-compose.prod.yml up -d --force-recreate frontend edge
+          if [ -d ~/potatoaihub/docker/.git ]; then
+            git config --global --add safe.directory ~/potatoaihub/docker || true
+            cd ~/potatoaihub/docker
+            git pull origin master || true
+          else
+            cd ~/potatoaihub/docker
+          fi
+          COMPOSE="docker compose --env-file .env.production -f docker-compose.prod.yml"
+          $COMPOSE up -d --force-recreate frontend edge
           EOF
