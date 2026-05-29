@@ -6,7 +6,7 @@ import {
 } from '../../features/auth/authApi';
 import { setCredentials } from '../../features/auth/authSlice';
 import { useAppDispatch } from '../../app/hooks';
-import { startGithubOAuth } from '../../utils/githubOAuth';
+import { startGithubOAuth, githubCallbackUrl } from '../../utils/githubOAuth';
 import type { AuthResponse } from '../../types/auth.types';
 
 interface SocialAuthButtonsProps {
@@ -106,7 +106,8 @@ export function SocialAuthButtons({ onError }: SocialAuthButtonsProps) {
       reportError('GitHub sign-in is not configured.');
       return;
     }
-    startGithubOAuth(githubClientId);
+    const redirectUri = authConfig?.githubRedirectUri ?? githubCallbackUrl();
+    startGithubOAuth(githubClientId, redirectUri);
   };
 
   const googleConfigured = Boolean(googleClientId);

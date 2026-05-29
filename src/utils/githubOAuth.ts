@@ -4,13 +4,13 @@ export function githubCallbackUrl(): string {
   return `${window.location.origin}/oauth/github/callback`;
 }
 
-export function startGithubOAuth(githubClientId: string): void {
+export function startGithubOAuth(githubClientId: string, redirectUri: string): void {
   const state = crypto.randomUUID();
   sessionStorage.setItem(GITHUB_OAUTH_STATE_KEY, state);
 
   const params = new URLSearchParams({
     client_id:     githubClientId,
-    redirect_uri:  githubCallbackUrl(),
+    redirect_uri:  redirectUri,
     scope:         'read:user user:email',
     state,
   });

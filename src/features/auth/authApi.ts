@@ -5,6 +5,7 @@ import { baseQueryWithReauth } from '../../utils/baseQuery';
 export interface AuthConfigResponse {
   googleClientId: string | null;
   githubClientId: string | null;
+  githubRedirectUri: string | null;
 }
 
 export const authApi = createApi({
