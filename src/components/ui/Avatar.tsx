@@ -1,4 +1,6 @@
+import { useEffect, useState } from 'react';
 import { clsx } from 'clsx';
+import { normalizeAvatarUrl } from '../../utils/avatarUrl';
 
 interface AvatarProps {
   src?:  string | null;
@@ -7,6 +9,14 @@ interface AvatarProps {
 }
 
 export function Avatar({ src, name, size = 'md' }: AvatarProps) {
+  const [failed, setFailed] = useState(false);
+
+  const displaySrc = src ? normalizeAvatarUrl(src) : null;
+
+  useEffect(() => {
+    setFailed(false);
+  }, [displaySrc]);
+
   const initials = name
     ? name.split(' ').map((n) => n[0]).slice(0, 2).join('').toUpperCase()
     : '?';
@@ -17,8 +27,16 @@ export function Avatar({ src, name, size = 'md' }: AvatarProps) {
     lg: 'h-10 w-10 text-base',
   }[size];
 
-  if (src) {
-    return <img src={src} alt={name ?? ''} className={clsx('rounded-full object-cover', sizeClass)} />;
+  if (displaySrc && !failed) {
+    return (
+      <img
+        src={displaySrc}
+        alt={name ?? ''}
+        referrerPolicy="no-referrer"
+        onError={() => setFailed(true)}
+        className={clsx('rounded-full object-cover', sizeClass)}
+      />
+    );
   }
 
   return (

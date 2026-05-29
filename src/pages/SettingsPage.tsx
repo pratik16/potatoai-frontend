@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { User, Shield, CreditCard, Bot, Palette, Bell, Trash2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { User, Shield, CreditCard, Bot, Palette, Bell, Trash2, Users } from 'lucide-react';
 import { clsx } from 'clsx';
 import { ProfileSection }        from '../features/settings/components/ProfileSection';
 import { SecuritySection }       from '../features/settings/components/SecuritySection';
@@ -7,6 +8,7 @@ import { BillingSection }        from '../features/settings/components/BillingSe
 import { AIPreferencesSection }  from '../features/settings/components/AIPreferencesSection';
 import { AppearanceSection }     from '../features/settings/components/AppearanceSection';
 import { NotificationsSection }  from '../features/settings/components/NotificationsSection';
+import { isLocalDev } from '../utils/env';
 
 const NAV = [
   { id: 'profile',      label: 'Profile',         icon: User,       group: 'ACCOUNT'      },
@@ -46,6 +48,18 @@ export default function SettingsPage() {
             ))}
           </div>
         ))}
+        {isLocalDev && (
+          <div className="mt-2 border-t border-surface-3 pt-2">
+            <p className="mb-1 px-2 text-xs font-semibold uppercase tracking-widest text-gray-600">DEVELOPER</p>
+            <Link
+              to="/team/agents"
+              className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-sm text-gray-400 transition-colors hover:bg-surface-2 hover:text-white"
+            >
+              <Users className="h-4 w-4" />
+              Cursor AI team
+            </Link>
+          </div>
+        )}
         <div className="mt-2 border-t border-surface-3 pt-2">
           <p className="mb-1 px-2 text-xs font-semibold uppercase tracking-widest text-gray-600">DATA</p>
           <button className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-sm text-gray-400 hover:bg-surface-2 hover:text-white">

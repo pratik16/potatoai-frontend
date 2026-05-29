@@ -12,10 +12,10 @@ export function ChatArea() {
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages.length, current]);
+  }, [messages.length]);
 
   return (
-    <div className="flex-1 overflow-y-auto px-4 py-4">
+    <div className="flex-1 overflow-y-auto px-4 py-4 [overflow-anchor:none]">
       <div className="mx-auto max-w-3xl">
         {messages.map((msg) => (
           <MessageBubble key={msg._id} message={msg} />

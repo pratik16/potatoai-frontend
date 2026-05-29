@@ -18,7 +18,19 @@ export const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, Fetch
 ) => {
   const result = await rawBase(args, api, extraOptions);
 
-  if (result.error?.status === 401) {
+  const url = typeof args === 'string' ? args : args.url;
+  const isPublicAuthRequest = [
+    '/auth/login',
+    '/auth/users/register',
+    '/auth/config',
+    '/auth/social/google',
+    '/auth/social/github',
+    '/auth/forgot-password',
+    '/auth/reset-password',
+    '/auth/users/resend-verification',
+  ].includes(url);
+
+  if (result.error?.status === 401 && !isPublicAuthRequest) {
     api.dispatch(clearCredentials());
     window.location.href = '/login?session_expired=1';
   }

@@ -6,11 +6,15 @@ import { AuthLayout } from './components/layout/AuthLayout';
 import { AdminGuard } from './features/admin/AdminGuard';
 import { AdminLayout } from './features/admin/AdminLayout';
 import { Spinner } from './components/ui/Spinner';
+import { isLocalDev } from './utils/env';
 
 const LoginPage           = lazy(() => import('./pages/LoginPage'));
 const RegisterPage        = lazy(() => import('./pages/RegisterPage'));
 const ForgotPasswordPage  = lazy(() => import('./pages/ForgotPasswordPage'));
 const ResetPasswordPage   = lazy(() => import('./pages/ResetPasswordPage'));
+const VerifyEmailPage     = lazy(() => import('./pages/VerifyEmailPage'));
+const VerifyPage              = lazy(() => import('./pages/VerifyPage'));
+const GithubOAuthCallbackPage = lazy(() => import('./pages/GithubOAuthCallbackPage'));
 const SharedChatPage      = lazy(() => import('./pages/SharedChatPage'));
 const NewChatPage         = lazy(() => import('./pages/NewChatPage'));
 const ChatPage            = lazy(() => import('./pages/ChatPage'));
@@ -18,6 +22,7 @@ const ProjectsPage        = lazy(() => import('./pages/ProjectsPage'));
 const ProjectDetailPage   = lazy(() => import('./pages/ProjectDetailPage'));
 const SettingsPage        = lazy(() => import('./pages/SettingsPage'));
 const UsagePage           = lazy(() => import('./pages/UsagePage'));
+const TeamAgentsPage = isLocalDev ? lazy(() => import('./pages/TeamAgentsPage')) : null;
 
 const AdminDashboardPage     = lazy(() => import('./features/admin/pages/AdminDashboardPage'));
 const AdminModelsPage        = lazy(() => import('./features/admin/pages/AdminModelsPage'));
@@ -54,7 +59,11 @@ export default function App() {
           <Route path="/register"        element={<RegisterPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password"  element={<ResetPasswordPage />} />
+          <Route path="/verify-email"    element={<VerifyEmailPage />} />
+          <Route path="/verify"          element={<VerifyPage />} />
         </Route>
+
+        <Route path="/oauth/github/callback" element={<GithubOAuthCallbackPage />} />
 
         {/* Public shared chat */}
         <Route path="/shared/:token" element={<SharedChatPage />} />
@@ -73,6 +82,9 @@ export default function App() {
           <Route path="/projects"        element={<ProjectsPage />} />
           <Route path="/projects/:id"    element={<ProjectDetailPage />} />
           <Route path="/settings"        element={<SettingsPage />} />
+          {isLocalDev && TeamAgentsPage && (
+            <Route path="/team/agents" element={<TeamAgentsPage />} />
+          )}
           <Route path="/usage"           element={<UsagePage />} />
         </Route>
 

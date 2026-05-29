@@ -6,6 +6,7 @@ import { setCredentials } from '../features/auth/authSlice';
 import { useAppDispatch } from '../app/hooks';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
+import { SocialAuthButtons } from '../components/auth/SocialAuthButtons';
 import { MODELS } from '../utils/modelConfig';
 
 export default function LoginPage() {
@@ -22,7 +23,7 @@ export default function LoginPage() {
     if (sessionExpired) {
       navigate('/login', { replace: true });
     }
-  }, []);
+  }, [navigate, sessionExpired]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,7 +33,23 @@ export default function LoginPage() {
       dispatch(setCredentials(result));
       navigate('/chat/new');
     } catch (err: unknown) {
-      setError((err as { data?: { message?: string } }).data?.message ?? 'Login failed');
+      const anyErr = err as { status?: number; data?: { code?: string; message?: string; detail?: string } };
+      const message = anyErr.data?.message ?? anyErr.data?.detail ?? 'Login failed';
+
+      const looksLikeUnverified =
+        anyErr.status === 403 && anyErr.data?.code === 'EMAIL_NOT_VERIFIED';
+
+      if (looksLikeUnverified) {
+        const email = form.email?.trim();
+        if (email) sessionStorage.setItem('pending_verification_email', email);
+        navigate(`/verify-email${email ? `?email=${encodeURIComponent(email)}` : ''}`, {
+          replace: true,
+          state: { email },
+        });
+        return;
+      }
+
+      setError(message);
     }
   };
 
@@ -49,14 +66,7 @@ export default function LoginPage() {
           <h1 className="mb-1 text-2xl font-bold text-white">Welcome back</h1>
           <p className="mb-8 text-sm text-gray-400">Sign in to your account to continue.</p>
 
-          <div className="mb-4 flex flex-col gap-3">
-            <button className="flex items-center justify-center gap-2 rounded-lg border border-surface-3 bg-surface-2 px-4 py-2.5 text-sm text-white hover:bg-surface-3">
-              <span>G</span> Continue with Google
-            </button>
-            <button className="flex items-center justify-center gap-2 rounded-lg border border-surface-3 bg-surface-2 px-4 py-2.5 text-sm text-white hover:bg-surface-3">
-              🥔 Continue with GitHub
-            </button>
-          </div>
+          <SocialAuthButtons onError={setError} />
 
           <div className="relative mb-6 flex items-center">
             <div className="flex-1 border-t border-surface-3" />
@@ -99,7 +109,7 @@ export default function LoginPage() {
           </form>
 
           <p className="mt-6 text-center text-sm text-gray-500">
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <Link to="/register" className="text-potato-500 hover:text-potato-400">Create one free</Link>
           </p>
         </div>

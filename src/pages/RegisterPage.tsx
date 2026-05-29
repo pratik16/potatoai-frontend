@@ -6,6 +6,7 @@ import { setCredentials } from '../features/auth/authSlice';
 import { useAppDispatch } from '../app/hooks';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
+import { SocialAuthButtons } from '../components/auth/SocialAuthButtons';
 
 export default function RegisterPage() {
   const dispatch  = useAppDispatch();
@@ -44,6 +45,14 @@ export default function RegisterPage() {
 
           <h1 className="mb-1 text-2xl font-bold text-white">Create your account</h1>
           <p className="mb-8 text-sm text-gray-400">Start chatting with AI models for free.</p>
+
+          <SocialAuthButtons onError={setError} />
+
+          <div className="relative mb-6 flex items-center">
+            <div className="flex-1 border-t border-surface-3" />
+            <span className="mx-4 text-xs text-gray-500">or register with email</span>
+            <div className="flex-1 border-t border-surface-3" />
+          </div>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <Input
