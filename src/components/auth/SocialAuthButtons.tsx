@@ -6,7 +6,7 @@ import {
 } from '../../features/auth/authApi';
 import { setCredentials } from '../../features/auth/authSlice';
 import { useAppDispatch } from '../../app/hooks';
-import { startGithubOAuth, githubCallbackUrl } from '../../utils/githubOAuth';
+import { startGithubOAuth } from '../../utils/githubOAuth';
 import type { AuthResponse } from '../../types/auth.types';
 
 interface SocialAuthButtonsProps {
@@ -25,6 +25,7 @@ export function SocialAuthButtons({ onError }: SocialAuthButtonsProps) {
 
   const googleClientId = authConfig?.googleClientId ?? null;
   const githubClientId = authConfig?.githubClientId ?? null;
+  const githubRedirectUri = authConfig?.githubRedirectUri ?? null;
 
   const reportError = useCallback(
     (message: string) => onError?.(message),
@@ -102,17 +103,16 @@ export function SocialAuthButtons({ onError }: SocialAuthButtonsProps) {
   }, [googleClientId, handleGoogleCredential]);
 
   const handleGithub = () => {
-    if (!githubClientId) {
+    if (!githubClientId || !githubRedirectUri) {
       reportError('GitHub sign-in is not configured.');
       return;
     }
-    const redirectUri = authConfig?.githubRedirectUri ?? githubCallbackUrl();
-    startGithubOAuth(githubClientId, redirectUri);
+    startGithubOAuth(githubClientId, githubRedirectUri);
   };
 
   const googleConfigured = Boolean(googleClientId);
   const googleDisabled = configLoading || !googleConfigured || !googleReady;
-  const githubDisabled = configLoading || !githubClientId;
+  const githubDisabled = configLoading || !githubClientId || !githubRedirectUri;
 
   const googlePlaceholder = configLoading
     ? 'Loading sign-in options…'

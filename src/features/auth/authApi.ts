@@ -15,6 +15,7 @@ export const authApi = createApi({
   endpoints: (builder) => ({
     getAuthConfig: builder.query<AuthConfigResponse, void>({
       query: () => '/auth/config',
+      keepUnusedDataFor: 60,
     }),
     login: builder.mutation<AuthResponse, LoginRequest>({
       query: (body) => ({ url: '/auth/login', method: 'POST', body }),
