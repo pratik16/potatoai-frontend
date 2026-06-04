@@ -1,0 +1,157 @@
+/**
+ * PotatoChat design tokens — vendored for standalone frontend CI.
+ * Canonical copy in monorepo: shared/theme/tokens.css (keep in sync when editing).
+ *
+ * Switch theme: <html data-theme="light|dark|claude" data-color-scheme="potato|claude">
+ */
+
+:root,
+[data-color-scheme='potato'][data-theme='dark'],
+[data-color-scheme='potato']:not([data-theme='light']) {
+  color-scheme: dark;
+
+  /* Surfaces */
+  --color-bg-0: #0d0d0d;
+  --color-bg-1: #171717;
+  --color-bg-2: #1f1f1f;
+  --color-bg-3: #2a2a2a;
+  --color-bg-4: #3a3a3a;
+
+  /* Brand (change these to re-skin the app) */
+  --color-brand-primary: #7c3aed;
+  --color-brand-accent: #8b5cf6;
+  --color-brand-primary-pressed: #6d28d9;
+  --color-brand-primary-muted: color-mix(in srgb, var(--color-brand-primary) 13%, transparent);
+  --color-brand-on-primary: #ffffff;
+
+  /* Text */
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #9ca3af;
+  --color-text-tertiary: #6b7280;
+  --color-text-link: var(--color-brand-accent);
+
+  /* Borders */
+  --color-border-subtle: rgb(255 255 255 / 10%);
+  --color-border-strong: rgb(255 255 255 / 13%);
+
+  /* Semantic */
+  --color-error: #ef4444;
+  --color-error-muted: color-mix(in srgb, var(--color-error) 15%, transparent);
+  --color-warning: #f59e0b;
+  --color-warning-bg: #451a03;
+  --color-warning-text: #fef3c7;
+  --color-success: #10b981;
+  --color-success-muted: color-mix(in srgb, var(--color-success) 15%, transparent);
+
+  /* Plan badge */
+  --color-plan-free: #f59e0b;
+
+  /* AI model accents (functional — not brand) */
+  --color-model-claude: #f59e0b;
+  --color-model-openai: #10b981;
+  --color-model-gemini: #3b82f6;
+  --color-model-qwen: #ef4444;
+  --color-model-minimax: #a855f7;
+
+  --color-model-claude-muted: color-mix(in srgb, var(--color-model-claude) 15%, transparent);
+  --color-model-openai-muted: color-mix(in srgb, var(--color-model-openai) 15%, transparent);
+  --color-model-gemini-muted: color-mix(in srgb, var(--color-model-gemini) 15%, transparent);
+  --color-model-qwen-muted: color-mix(in srgb, var(--color-model-qwen) 15%, transparent);
+  --color-model-minimax-muted: color-mix(in srgb, var(--color-model-minimax) 15%, transparent);
+
+  /* Legacy aliases (mobile HTML mocks — prefer --color-* in new code) */
+  --bg: var(--color-bg-0);
+  --surface: var(--color-bg-1);
+  --surface2: var(--color-bg-2);
+  --surface3: var(--color-bg-3);
+  --accent: var(--color-brand-primary);
+  --accent2: var(--color-brand-accent);
+  --text: var(--color-text-primary);
+  --muted: var(--color-text-secondary);
+  --muted2: var(--color-text-tertiary);
+  --border: var(--color-border-subtle);
+  --border2: var(--color-border-strong);
+  --red: var(--color-error);
+
+  /* Scrollbar (web) */
+  --scrollbar-thumb: var(--color-bg-4);
+  --scrollbar-track: transparent;
+
+  /* Radii & spacing (optional — use in custom CSS) */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+}
+
+[data-color-scheme='potato'][data-theme='light'] {
+  color-scheme: light;
+
+  --color-bg-0: #fafafa;
+  --color-bg-1: #ffffff;
+  --color-bg-2: #f3f4f6;
+  --color-bg-3: #e5e7eb;
+  --color-bg-4: #d1d5db;
+
+  /* brand hues unchanged for recognition */
+  --color-brand-primary: #7c3aed;
+  --color-brand-accent: #6d28d9;
+  --color-brand-primary-pressed: #5b21b6;
+  --color-brand-on-primary: #ffffff;
+
+  --color-text-primary: #111827;
+  --color-text-secondary: #6b7280;
+  --color-text-tertiary: #9ca3af;
+
+  --color-border-subtle: rgb(0 0 0 / 8%);
+  --color-border-strong: rgb(0 0 0 / 12%);
+
+  --color-warning-bg: #fef3c7;
+  --color-warning-text: #92400e;
+
+  --scrollbar-thumb: #d1d5db;
+}
+
+/* Claude — warm editorial palette (inspired by claude.ai) */
+[data-color-scheme='claude'],
+[data-theme='claude'] {
+  color-scheme: light;
+
+  --color-bg-0: #faf9f5;
+  --color-bg-1: #f5f4ed;
+  --color-bg-2: #efe9de;
+  --color-bg-3: #e8e0d2;
+  --color-bg-4: #ddd6c8;
+
+  --color-brand-primary: #c96442;
+  --color-brand-accent: #cc785c;
+  --color-brand-primary-pressed: #a9583e;
+  --color-brand-primary-muted: color-mix(in srgb, var(--color-brand-primary) 12%, transparent);
+  --color-brand-on-primary: #ffffff;
+
+  --color-text-primary: #141413;
+  --color-text-secondary: #6c6a64;
+  --color-text-tertiary: #8e8b82;
+  --color-text-link: #a9583e;
+
+  --color-border-subtle: rgb(20 20 19 / 8%);
+  --color-border-strong: rgb(20 20 19 / 14%);
+
+  --color-error: #dc2626;
+  --color-error-muted: color-mix(in srgb, var(--color-error) 12%, transparent);
+  --color-warning: #d97706;
+  --color-warning-bg: #fef3c7;
+  --color-warning-text: #92400e;
+  --color-success: #059669;
+  --color-success-muted: color-mix(in srgb, var(--color-success) 12%, transparent);
+
+  --color-plan-free: #d97706;
+
+  --color-model-claude: #c96442;
+  --color-model-openai: #059669;
+  --color-model-gemini: #2563eb;
+  --color-model-qwen: #dc2626;
+  --color-model-minimax: #9333ea;
+
+  --scrollbar-thumb: #ddd6c8;
+}
