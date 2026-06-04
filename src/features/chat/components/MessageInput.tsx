@@ -11,7 +11,12 @@ const MAX_FILES   = 5;
 const MAX_FILE_MB = 10;
 const ALLOWED_TYPES = ['text/plain', 'application/pdf', 'text/markdown', 'image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 
-export function MessageInput() {
+interface MessageInputProps {
+  /** When set, new chats are created inside this project (ChatGPT-style). */
+  projectId?: string | null;
+}
+
+export function MessageInput({ projectId = null }: MessageInputProps) {
   const dispatch    = useAppDispatch();
   const [value, setValue]     = useState('');
   const [files, setFiles]     = useState<File[]>([]);
@@ -45,7 +50,7 @@ export function MessageInput() {
     if (!trimmed || isStreaming) return;
     setValue('');
     setFiles([]);
-    sendMessage(trimmed, null, files);
+    sendMessage(trimmed, projectId, files);
   };
 
   const handleInput = () => {

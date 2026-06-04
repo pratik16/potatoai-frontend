@@ -17,9 +17,9 @@ export function ProjectCard({ project }: { project: Project }) {
     >
       <div className="mb-3 flex items-center justify-between">
         <span className="text-2xl">{project.emoji}</span>
-        <button className="text-gray-600 opacity-0 hover:text-white group-hover:opacity-100">
+        <span className="text-gray-600 opacity-0 group-hover:opacity-100" aria-hidden>
           <MoreHorizontal className="h-4 w-4" />
-        </button>
+        </span>
       </div>
 
       <h3 className="mb-1 font-semibold text-white">{project.name}</h3>

@@ -1,13 +1,16 @@
+@import '../../shared/theme/tokens.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-  :root {
-    --scrollbar-thumb: #3a3a3a;
-    --scrollbar-track: transparent;
+  body {
+    color: var(--color-text-primary);
   }
+}
 
+@layer base {
   * {
     scrollbar-width: thin;
     scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
@@ -26,4 +29,26 @@
     background-color: var(--scrollbar-thumb);
     border-radius: 3px;
   }
+}
+
+/* Map hardcoded Tailwind grays to tokens on Claude theme */
+[data-color-scheme='claude'] .text-white,
+[data-color-scheme='claude'] .text-gray-200,
+[data-color-scheme='claude'] .text-gray-300 {
+  color: var(--color-text-primary);
+}
+
+[data-color-scheme='claude'] .text-gray-400,
+[data-color-scheme='claude'] .text-gray-500 {
+  color: var(--color-text-secondary);
+}
+
+[data-color-scheme='claude'] .text-gray-600,
+[data-color-scheme='claude'] .text-gray-700 {
+  color: var(--color-text-tertiary);
+}
+
+[data-color-scheme='claude'] .hover\:text-white:hover,
+[data-color-scheme='claude'] .group:hover .group-hover\:text-white {
+  color: var(--color-text-primary);
 }

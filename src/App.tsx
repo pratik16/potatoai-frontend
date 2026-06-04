@@ -20,6 +20,7 @@ const NewChatPage         = lazy(() => import('./pages/NewChatPage'));
 const ChatPage            = lazy(() => import('./pages/ChatPage'));
 const ProjectsPage        = lazy(() => import('./pages/ProjectsPage'));
 const ProjectDetailPage   = lazy(() => import('./pages/ProjectDetailPage'));
+const ProjectNewChatPage  = lazy(() => import('./pages/ProjectNewChatPage'));
 const SettingsPage        = lazy(() => import('./pages/SettingsPage'));
 const UsagePage           = lazy(() => import('./pages/UsagePage'));
 const TeamAgentsPage = isLocalDev ? lazy(() => import('./pages/TeamAgentsPage')) : null;
@@ -79,8 +80,9 @@ export default function App() {
           <Route index element={<Navigate to="/chat/new" replace />} />
           <Route path="/chat/new"        element={<NewChatPage />} />
           <Route path="/chat/:chatId"    element={<ChatPage />} />
-          <Route path="/projects"        element={<ProjectsPage />} />
-          <Route path="/projects/:id"    element={<ProjectDetailPage />} />
+          <Route path="/projects"             element={<ProjectsPage />} />
+          <Route path="/projects/:id"         element={<ProjectDetailPage />} />
+          <Route path="/projects/:id/new"     element={<ProjectNewChatPage />} />
           <Route path="/settings"        element={<SettingsPage />} />
           {isLocalDev && TeamAgentsPage && (
             <Route path="/team/agents" element={<TeamAgentsPage />} />

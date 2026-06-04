@@ -8,6 +8,7 @@ export interface User {
   plan:                'free' | 'pro' | 'team';
   timezone:            string;
   theme:               'dark' | 'light' | 'system';
+  ui_theme:            'potato' | 'claude';
   font_size:           'small' | 'medium' | 'large';
   compact_mode:        boolean;
   default_model:       string | null;

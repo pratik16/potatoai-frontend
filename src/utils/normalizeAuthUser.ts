@@ -13,5 +13,7 @@ export function normalizeAuthUser(raw: ApiUser): User {
     full_name:  raw.full_name ?? raw.fullName ?? raw.name ?? null,
     avatar_url: resolveAvatarUrl(raw),
     username:   raw.username ?? null,
+    ui_theme:   raw.ui_theme ?? 'potato',
+    theme:      raw.theme ?? 'dark',
   };
 }
