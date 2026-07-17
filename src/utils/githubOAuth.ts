@@ -18,7 +18,11 @@ export function startGithubOAuth(githubClientId: string, redirectUri: string): v
   window.location.assign(`https://github.com/login/oauth/authorize?${params}`);
 }
 
-/** Validate CSRF state without clearing (safe for React Strict Mode double-mount). */
+/**
+ * Validate CSRF state without clearing (safe for React Strict Mode double-mount).
+ * States prefixed with `android.` are not stored here — GithubOAuthCallbackPage
+ * deep-links them to potatochat:// for the Android app.
+ */
 export function peekGithubOAuthState(receivedState: string | null): boolean {
   const expected = sessionStorage.getItem(GITHUB_OAUTH_STATE_KEY);
   return !!expected && !!receivedState && expected === receivedState;
