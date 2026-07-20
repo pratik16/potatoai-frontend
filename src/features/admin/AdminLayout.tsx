@@ -1,4 +1,5 @@
 import { Outlet } from 'react-router-dom';
+import { BrandLogo } from '../../components/BrandLogo';
 import { AdminNavLink } from './components/AdminShared';
 
 export function AdminLayout() {
@@ -7,7 +8,9 @@ export function AdminLayout() {
       <aside className="flex w-56 flex-col border-r border-gray-800 bg-gray-900">
         <div className="border-b border-gray-800 p-4">
           <p className="text-xs uppercase tracking-widest text-gray-500">Admin Panel</p>
-          <h1 className="mt-1 text-lg font-bold text-white">🥔 PotatoChat</h1>
+          <h1 className="mt-1">
+            <BrandLogo size="md" wordmarkClassName="font-bold" />
+          </h1>
         </div>
 
         <nav className="flex-1 space-y-0.5 p-3">

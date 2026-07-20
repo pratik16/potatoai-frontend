@@ -7,6 +7,7 @@ import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import { setSidebarOpen } from '../../app/uiSlice';
 import { useGetChatsQuery } from '../../features/chat/chatApi';
 import { ProjectSidebarSection } from '../../features/projects/components/ProjectSidebarSection';
+import { BrandLogo } from '../BrandLogo';
 import { SidebarChatItem } from './SidebarChatItem';
 import { SidebarFooter } from './SidebarFooter';
 
@@ -39,8 +40,7 @@ export function Sidebar() {
       {/* Header */}
       <div className="flex items-center justify-between p-3">
         <Link to="/" className="flex items-center gap-2">
-          <span className="text-lg">🥔</span>
-          <span className="font-semibold text-white">PotatoChat</span>
+          <BrandLogo size="sm" />
         </Link>
         <button onClick={() => dispatch(setSidebarOpen(false))} className="text-gray-500 hover:text-white">
           <ChevronLeft className="h-4 w-4" />

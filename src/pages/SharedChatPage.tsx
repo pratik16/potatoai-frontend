@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Spinner } from '../components/ui/Spinner';
+import { BrandLogo } from '../components/BrandLogo';
 import { MessageBubble } from '../features/chat/components/MessageBubble';
 
 interface SharedMessage {
@@ -64,10 +65,7 @@ export default function SharedChatPage() {
       {/* Header */}
       <header className="sticky top-0 z-10 border-b border-surface-3 bg-surface-1 px-6 py-3">
         <div className="mx-auto flex max-w-3xl items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-xl">🥔</span>
-            <span className="font-semibold text-white">PotatoChat</span>
-          </div>
+          <BrandLogo size="sm" />
           <Link
             to="/register"
             className="rounded-lg bg-potato-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-potato-700"

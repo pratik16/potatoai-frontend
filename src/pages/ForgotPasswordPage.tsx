@@ -4,6 +4,7 @@ import { Mail } from 'lucide-react';
 import { useForgotPasswordMutation } from '../features/auth/authApi';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
+import { BrandLogo } from '../components/BrandLogo';
 
 export default function ForgotPasswordPage() {
   const [forgotPassword, { isLoading }] = useForgotPasswordMutation();
@@ -25,9 +26,8 @@ export default function ForgotPasswordPage() {
   return (
     <div className="flex min-h-screen w-full items-center justify-center">
       <div className="w-full max-w-sm px-6">
-        <div className="mb-8 flex items-center gap-2">
-          <span className="text-2xl">🥔</span>
-          <span className="text-lg font-semibold text-white">PotatoChat</span>
+        <div className="mb-8">
+          <BrandLogo size="lg" />
         </div>
 
         <h1 className="mb-1 text-2xl font-bold text-white">Reset your password</h1>

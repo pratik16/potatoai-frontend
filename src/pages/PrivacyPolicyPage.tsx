@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useTheme } from '../hooks/useTheme';
+import { BrandLogo } from '../components/BrandLogo';
 
 const LAST_UPDATED = 'July 20, 2026';
 const SUPPORT_EMAIL = 'support@potatoaihub.com';
@@ -13,8 +14,7 @@ export default function PrivacyPolicyPage() {
       <header className="sticky top-0 z-10 border-b border-surface-3 bg-surface-1 px-6 py-3">
         <div className="mx-auto flex max-w-3xl items-center justify-between">
           <Link to="/login" className="flex items-center gap-2">
-            <span className="text-xl" aria-hidden>🥔</span>
-            <span className="font-semibold text-white">PotatoChat</span>
+            <BrandLogo size="sm" />
           </Link>
           <Link
             to="/login"

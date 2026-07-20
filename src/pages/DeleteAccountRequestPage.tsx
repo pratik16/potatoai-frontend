@@ -6,6 +6,7 @@ import { useTheme } from '../hooks/useTheme';
 import { useRequestAccountDeletionMutation } from '../features/support/supportApi';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
+import { BrandLogo } from '../components/BrandLogo';
 
 export default function DeleteAccountRequestPage() {
   useTheme();
@@ -43,8 +44,7 @@ export default function DeleteAccountRequestPage() {
       <header className="sticky top-0 z-10 border-b border-surface-3 bg-surface-1 px-6 py-3">
         <div className="mx-auto flex max-w-lg items-center justify-between">
           <Link to="/login" className="flex items-center gap-2">
-            <span className="text-xl" aria-hidden>🥔</span>
-            <span className="font-semibold text-white">PotatoChat</span>
+            <BrandLogo size="sm" />
           </Link>
           <Link to="/privacy" className="text-sm text-potato-500 hover:text-potato-400">
             Privacy Policy

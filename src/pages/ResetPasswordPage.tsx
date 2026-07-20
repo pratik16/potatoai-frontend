@@ -4,6 +4,7 @@ import { Lock, Mail } from 'lucide-react';
 import { useResetPasswordMutation } from '../features/auth/authApi';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
+import { BrandLogo } from '../components/BrandLogo';
 
 export default function ResetPasswordPage() {
   const navigate         = useNavigate();
@@ -39,9 +40,8 @@ export default function ResetPasswordPage() {
   return (
     <div className="flex min-h-screen w-full items-center justify-center">
       <div className="w-full max-w-sm px-6">
-        <div className="mb-8 flex items-center gap-2">
-          <span className="text-2xl">🥔</span>
-          <span className="text-lg font-semibold text-white">PotatoChat</span>
+        <div className="mb-8">
+          <BrandLogo size="lg" />
         </div>
 
         <h1 className="mb-1 text-2xl font-bold text-white">Set new password</h1>

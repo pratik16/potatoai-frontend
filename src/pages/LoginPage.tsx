@@ -7,6 +7,7 @@ import { useAppDispatch } from '../app/hooks';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { SocialAuthButtons } from '../components/auth/SocialAuthButtons';
+import { BrandLogo } from '../components/BrandLogo';
 import { MODELS } from '../utils/modelConfig';
 
 export default function LoginPage() {
@@ -58,9 +59,8 @@ export default function LoginPage() {
       {/* Form panel */}
       <div className="flex w-full flex-col justify-center px-8 py-12 lg:w-1/2">
         <div className="mx-auto w-full max-w-sm">
-          <div className="mb-8 flex items-center gap-2">
-            <span className="text-2xl">🥔</span>
-            <span className="text-lg font-semibold text-white">PotatoChat</span>
+          <div className="mb-8">
+            <BrandLogo size="lg" />
           </div>
 
           <h1 className="mb-1 text-2xl font-bold text-white">Welcome back</h1>
