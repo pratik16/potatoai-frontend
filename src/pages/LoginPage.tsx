@@ -112,6 +112,9 @@ export default function LoginPage() {
             Don&apos;t have an account?{' '}
             <Link to="/register" className="text-potato-500 hover:text-potato-400">Create one free</Link>
           </p>
+          <p className="mt-3 text-center text-xs text-gray-600">
+            <Link to="/privacy" className="hover:text-gray-400">Privacy Policy</Link>
+          </p>
         </div>
       </div>
 

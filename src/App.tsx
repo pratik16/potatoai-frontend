@@ -16,6 +16,7 @@ const VerifyEmailPage     = lazy(() => import('./pages/VerifyEmailPage'));
 const VerifyPage              = lazy(() => import('./pages/VerifyPage'));
 const GithubOAuthCallbackPage = lazy(() => import('./pages/GithubOAuthCallbackPage'));
 const SharedChatPage      = lazy(() => import('./pages/SharedChatPage'));
+const PrivacyPolicyPage   = lazy(() => import('./pages/PrivacyPolicyPage'));
 const NewChatPage         = lazy(() => import('./pages/NewChatPage'));
 const ChatPage            = lazy(() => import('./pages/ChatPage'));
 const ProjectsPage        = lazy(() => import('./pages/ProjectsPage'));
@@ -68,6 +69,9 @@ export default function App() {
 
         {/* Public shared chat */}
         <Route path="/shared/:token" element={<SharedChatPage />} />
+
+        {/* Public legal */}
+        <Route path="/privacy" element={<PrivacyPolicyPage />} />
 
         {/* App routes */}
         <Route

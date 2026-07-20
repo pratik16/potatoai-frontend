@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { User, Shield, CreditCard, Bot, Palette, Bell, Trash2, Users } from 'lucide-react';
+import { User, Shield, CreditCard, Bot, Palette, Bell, Trash2, Users, FileText } from 'lucide-react';
 import { clsx } from 'clsx';
 import { ProfileSection }        from '../features/settings/components/ProfileSection';
 import { SecuritySection }       from '../features/settings/components/SecuritySection';
@@ -62,6 +62,12 @@ export default function SettingsPage() {
         )}
         <div className="mt-2 border-t border-surface-3 pt-2">
           <p className="mb-1 px-2 text-xs font-semibold uppercase tracking-widest text-gray-600">DATA</p>
+          <Link
+            to="/privacy"
+            className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-sm text-gray-400 transition-colors hover:bg-surface-2 hover:text-white"
+          >
+            <FileText className="h-4 w-4" /> Privacy Policy
+          </Link>
           <button className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-sm text-gray-400 hover:bg-surface-2 hover:text-white">
             <Trash2 className="h-4 w-4" /> Delete account
           </button>
