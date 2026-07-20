@@ -16,7 +16,8 @@ const VerifyEmailPage     = lazy(() => import('./pages/VerifyEmailPage'));
 const VerifyPage              = lazy(() => import('./pages/VerifyPage'));
 const GithubOAuthCallbackPage = lazy(() => import('./pages/GithubOAuthCallbackPage'));
 const SharedChatPage      = lazy(() => import('./pages/SharedChatPage'));
-const PrivacyPolicyPage   = lazy(() => import('./pages/PrivacyPolicyPage'));
+const PrivacyPolicyPage        = lazy(() => import('./pages/PrivacyPolicyPage'));
+const DeleteAccountRequestPage = lazy(() => import('./pages/DeleteAccountRequestPage'));
 const NewChatPage         = lazy(() => import('./pages/NewChatPage'));
 const ChatPage            = lazy(() => import('./pages/ChatPage'));
 const ProjectsPage        = lazy(() => import('./pages/ProjectsPage'));
@@ -72,6 +73,7 @@ export default function App() {
 
         {/* Public legal */}
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
+        <Route path="/delete-account" element={<DeleteAccountRequestPage />} />
 
         {/* App routes */}
         <Route

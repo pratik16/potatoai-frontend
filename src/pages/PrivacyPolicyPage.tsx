@@ -182,7 +182,11 @@ export default function PrivacyPolicyPage() {
           </ul>
           <p>
             You can update profile details in Settings, and manage email preferences where
-            available. To exercise privacy rights or request account deletion, contact{' '}
+            available. To request account deletion, use our{' '}
+            <Link to="/delete-account" className="text-potato-500 hover:text-potato-400">
+              account deletion request form
+            </Link>
+            {' '}or contact{' '}
             <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>. We may need to verify your
             identity before fulfilling a request.
           </p>
@@ -222,6 +226,11 @@ export default function PrivacyPolicyPage() {
 
       <footer className="border-t border-surface-3 bg-surface-1 px-6 py-6 text-center text-sm text-gray-500">
         <p className="mb-2">© {new Date().getFullYear()} PotatoAIHub · PotatoChat</p>
+        <p className="mb-2 flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
+          <Link to="/delete-account" className="text-potato-500 hover:text-potato-400">
+            Request account deletion
+          </Link>
+        </p>
         <Link to="/login" className="text-potato-500 hover:text-potato-400">
           Back to sign in
         </Link>

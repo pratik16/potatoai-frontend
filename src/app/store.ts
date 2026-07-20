@@ -12,6 +12,7 @@ import { usageApi }     from '../features/usage/usageApi';
 import { settingsApi }  from '../features/settings/settingsApi';
 import { adminApi }     from '../features/admin/adminApi';
 import { promptsApi }   from '../features/prompts/promptsApi';
+import { supportApi }   from '../features/support/supportApi';
 
 export const store = configureStore({
   reducer: {
@@ -28,6 +29,7 @@ export const store = configureStore({
     [settingsApi.reducerPath]: settingsApi.reducer,
     [adminApi.reducerPath]:    adminApi.reducer,
     [promptsApi.reducerPath]:  promptsApi.reducer,
+    [supportApi.reducerPath]:  supportApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
@@ -38,6 +40,7 @@ export const store = configureStore({
       settingsApi.middleware,
       adminApi.middleware,
       promptsApi.middleware,
+      supportApi.middleware,
     ),
 });
 

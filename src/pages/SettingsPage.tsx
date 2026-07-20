@@ -68,9 +68,12 @@ export default function SettingsPage() {
           >
             <FileText className="h-4 w-4" /> Privacy Policy
           </Link>
-          <button className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-sm text-gray-400 hover:bg-surface-2 hover:text-white">
+          <Link
+            to="/delete-account"
+            className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-sm text-gray-400 transition-colors hover:bg-surface-2 hover:text-white"
+          >
             <Trash2 className="h-4 w-4" /> Delete account
-          </button>
+          </Link>
         </div>
       </aside>
 

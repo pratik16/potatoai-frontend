@@ -28,6 +28,7 @@ export const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, Fetch
     '/auth/forgot-password',
     '/auth/reset-password',
     '/auth/users/resend-verification',
+    '/support/account-deletion-request',
   ].includes(url);
 
   if (result.error?.status === 401 && !isPublicAuthRequest) {
