@@ -12,6 +12,13 @@ export interface ChatMeta {
   created_at:      string;
 }
 
+export interface Citation {
+  title:   string;
+  url:     string;
+  snippet: string;
+  date?:   string | null;
+}
+
 export interface Message {
   id:               string;
   _id:              string;
@@ -22,6 +29,7 @@ export interface Message {
   thinking_content: string | null;
   artifacts:        Artifact[];
   attachments:      Attachment[];
+  sources?:         Citation[];
   input_tokens:     number | null;
   output_tokens:    number | null;
   credits_deducted: number | null;

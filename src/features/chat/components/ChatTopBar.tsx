@@ -4,7 +4,7 @@ import { CreditPill } from '../../../components/ui/CreditPill';
 
 export function ChatTopBar({ title }: { title: string }) {
   return (
-    <header className="flex items-center justify-between border-b border-surface-3 px-4 py-3">
+    <header className="flex items-center justify-between px-4 py-3">
       <h1 className="truncate text-sm font-medium text-white max-w-sm">{title}</h1>
       <div className="flex items-center gap-2">
         <ModelSelector />

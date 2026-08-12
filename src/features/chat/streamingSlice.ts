@@ -1,11 +1,14 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import type { Artifact } from '../../types/artifact.types';
+import type { Citation } from '../../types/chat.types';
 
 interface StreamingState {
   isStreaming:       boolean;
   currentContent:    string;
   thinkingContent:   string;
   streamedArtifacts: Partial<Artifact>[];
+  pipelineStatus:    'analyzing' | 'searching' | null;
+  streamedSources:   Citation[];
 }
 
 const initialState: StreamingState = {
@@ -13,6 +16,8 @@ const initialState: StreamingState = {
   currentContent:    '',
   thinkingContent:   '',
   streamedArtifacts: [],
+  pipelineStatus:    null,
+  streamedSources:   [],
 };
 
 const streamingSlice = createSlice({
@@ -24,12 +29,21 @@ const streamingSlice = createSlice({
       state.currentContent    = '';
       state.thinkingContent   = '';
       state.streamedArtifacts = [];
+      state.pipelineStatus    = null;
+      state.streamedSources   = [];
     },
     appendToken: (state, action: PayloadAction<string>) => {
       state.currentContent += action.payload;
+      state.pipelineStatus = null;
     },
     appendThinking: (state, action: PayloadAction<string>) => {
       state.thinkingContent += action.payload;
+    },
+    setPipelineStatus: (state, action: PayloadAction<'analyzing' | 'searching' | null>) => {
+      state.pipelineStatus = action.payload;
+    },
+    setStreamedSources: (state, action: PayloadAction<Citation[]>) => {
+      state.streamedSources = action.payload;
     },
     updateArtifact: (state, action: PayloadAction<Partial<Artifact>>) => {
       const existing = state.streamedArtifacts.find(
@@ -43,6 +57,7 @@ const streamingSlice = createSlice({
     },
     stopStream: (state) => {
       state.isStreaming = false;
+      state.pipelineStatus = null;
     },
     resetStream: () => initialState,
   },
@@ -52,6 +67,8 @@ export const {
   startStream,
   appendToken,
   appendThinking,
+  setPipelineStatus,
+  setStreamedSources,
   updateArtifact,
   stopStream,
   resetStream,

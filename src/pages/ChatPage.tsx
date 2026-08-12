@@ -42,7 +42,7 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col overflow-hidden">
+    <div className="relative flex flex-1 flex-col overflow-hidden">
       <ChatTopBar title={data?.title ?? 'Chat'} />
       <ChatArea />
       <MessageInput />

@@ -11,7 +11,9 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/api': {
-        target: 'http://localhost:8000',
+        // Defaults to the local backend. Set API_PROXY to develop against a
+        // deployed API, e.g. API_PROXY=https://potatoaihub.com npm run dev
+        target: process.env.API_PROXY || 'http://localhost:8000',
         changeOrigin: true,
       },
     },

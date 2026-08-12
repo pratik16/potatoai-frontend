@@ -89,8 +89,8 @@ export function MessageInput({ projectId = null }: MessageInputProps) {
   }, [files]);
 
   return (
-    <div className="border-t border-surface-3 px-4 py-3">
-      <div className="mx-auto max-w-3xl">
+    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-surface-0 via-surface-0 to-transparent px-4 pb-3 pt-8">
+      <div className="mx-auto max-w-[720px]">
         {/* File previews */}
         {files.length > 0 && (
           <div className="mb-2 flex flex-wrap gap-2">
@@ -101,7 +101,7 @@ export function MessageInput({ projectId = null }: MessageInputProps) {
                     <img
                       src={previews[i]!}
                       alt={f.name}
-                      className="h-16 w-16 rounded-lg border border-surface-3 object-cover"
+                      className="h-16 w-16 rounded-2xl object-cover"
                     />
                     <button
                       onClick={() => removeFile(i)}
@@ -111,7 +111,7 @@ export function MessageInput({ projectId = null }: MessageInputProps) {
                     </button>
                   </>
                 ) : (
-                  <div className="flex items-center gap-1.5 rounded-lg border border-surface-3 bg-surface-2 px-2 py-1 text-xs text-gray-300">
+                  <div className="flex items-center gap-1.5 rounded-full bg-surface-2 px-3 py-1.5 text-xs text-gray-300">
                     <span className="truncate max-w-[120px]">{f.name}</span>
                     <button onClick={() => removeFile(i)} className="text-gray-500 hover:text-white">
                       <X className="h-3 w-3" />
@@ -123,7 +123,18 @@ export function MessageInput({ projectId = null }: MessageInputProps) {
           </div>
         )}
 
-        <div className="relative rounded-2xl border border-surface-3 bg-surface-2 focus-within:border-potato-500">
+        {/* One 64px row — controls sit inline with the text, which is what
+            makes Gemini's composer read as a pill rather than a box. It only
+            grows taller once the textarea itself wraps past a single line. */}
+        <div className="flex min-h-[64px] items-center gap-2 rounded-[32px] bg-surface-2 px-3 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.16)] transition-colors focus-within:bg-surface-3">
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            title="Attach files"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-surface-3 hover:text-white"
+          >
+            <Paperclip className="h-5 w-5" />
+          </button>
+
           <textarea
             ref={textareaRef}
             value={value}
@@ -133,44 +144,42 @@ export function MessageInput({ projectId = null }: MessageInputProps) {
             placeholder="Message PotatoChat..."
             rows={1}
             maxLength={MAX_CHARS}
-            className="w-full resize-none bg-transparent px-4 pt-3 pb-12 text-sm text-white placeholder-gray-500 focus:outline-none"
+            className="my-4 max-h-48 flex-1 resize-none bg-transparent text-[17px] leading-6 text-white placeholder-gray-500 focus:outline-none"
           />
 
-          <div className="absolute bottom-3 left-3 flex items-center gap-3">
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              title="Attach files"
-              className="text-gray-500 hover:text-white"
-            >
-              <Paperclip className="h-4 w-4" />
-            </button>
-            <button
-              onClick={() => setShowPrompts((v) => !v)}
-              title="Prompt library"
-              className={clsx('hover:text-white', showPrompts ? 'text-potato-400' : 'text-gray-500')}
-            >
-              <BookOpen className="h-4 w-4" />
-            </button>
-          </div>
-
-          <div className="absolute bottom-3 right-3 flex items-center gap-2">
-            <span className={clsx('text-xs', value.length > MAX_CHARS * 0.9 ? 'text-yellow-400' : 'text-gray-600')}>
+          {value.length > MAX_CHARS * 0.75 && (
+            <span className={clsx('shrink-0 text-xs', value.length > MAX_CHARS * 0.9 ? 'text-yellow-400' : 'text-gray-500')}>
               {value.length}/{MAX_CHARS}
             </span>
-            {isStreaming ? (
-              <button onClick={stopGeneration} className="flex h-7 w-7 items-center justify-center rounded-lg bg-surface-3 text-white hover:bg-surface-4">
-                <Square className="h-3.5 w-3.5 fill-white" />
-              </button>
-            ) : (
-              <button
-                onClick={handleSend}
-                disabled={!value.trim()}
-                className="flex h-7 w-7 items-center justify-center rounded-lg bg-potato-600 text-white hover:bg-potato-700 disabled:opacity-40"
-              >
-                <Send className="h-3.5 w-3.5" />
-              </button>
+          )}
+
+          <button
+            onClick={() => setShowPrompts((v) => !v)}
+            title="Prompt library"
+            className={clsx(
+              // Hidden on narrow viewports — four inline controls leave the
+              // textarea almost no room, and this is the least-used of them.
+              'hidden h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-surface-3 hover:text-white sm:flex',
+              showPrompts ? 'text-potato-500' : 'text-gray-400',
             )}
-          </div>
+          >
+            <BookOpen className="h-5 w-5" />
+          </button>
+
+          {isStreaming ? (
+            <button onClick={stopGeneration} title="Stop" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-4 text-white hover:bg-surface-3">
+              <Square className="h-3.5 w-3.5 fill-white" />
+            </button>
+          ) : (
+            <button
+              onClick={handleSend}
+              disabled={!value.trim()}
+              title="Send"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-surface-3 hover:text-white disabled:pointer-events-none disabled:opacity-30"
+            >
+              <Send className="h-5 w-5" />
+            </button>
+          )}
         </div>
 
         <p className="mt-2 text-center text-xs text-gray-600">
@@ -189,7 +198,7 @@ export function MessageInput({ projectId = null }: MessageInputProps) {
 
       {/* Prompt library panel */}
       {showPrompts && (
-        <div className="mx-auto mt-2 max-w-3xl">
+        <div className="mx-auto mt-2 max-w-[720px]">
           <PromptLibraryPanel
             onSelect={(content) => {
               setValue(content);

@@ -4,12 +4,13 @@ import type { AppDispatch } from '../app/store';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
 import {
   startStream, appendToken, appendThinking, updateArtifact, stopStream, resetStream,
+  setPipelineStatus, setStreamedSources,
 } from '../features/chat/streamingSlice';
 import { addMessage, prependChat, setActiveChat, updateMessageById } from '../features/chat/chatSlice';
 import { updateUser } from '../features/auth/authSlice';
 import { showToast } from '../app/uiSlice';
 import { chatApi } from '../features/chat/chatApi';
-import type { Message } from '../types/chat.types';
+import type { Citation, Message } from '../types/chat.types';
 
 const STREAM_TIMEOUT_MS = 30_000;
 
@@ -130,15 +131,17 @@ export function useChat() {
           fd.append('content', content);
           fd.append('model', selectedModel);
           fd.append('enable_thinking', '0');
+          fd.append('enable_search', '1');
           files.forEach((f) => fd.append('files[]', f));
           body = fd;
         } else {
           headers['Content-Type'] = 'application/json';
-          body = JSON.stringify({ content, model: selectedModel, enable_thinking: false, enable_search: false });
+          body = JSON.stringify({ content, model: selectedModel, enable_thinking: false, enable_search: true });
         }
 
         let pendingImageAssetId: string | null = null;
         let pendingImageMsgId:   string | null = null;
+        let assistantSources: Citation[] = [];
 
         try {
           const res = await fetch(`/api/chats/${chatId}/messages`, {
@@ -176,6 +179,17 @@ export function useChat() {
               try {
                 const evt = JSON.parse(raw);
                 switch (evt.type) {
+                  case 'status':
+                    if (evt.phase === 'analyzing' || evt.phase === 'searching') {
+                      dispatch(setPipelineStatus(evt.phase));
+                    }
+                    lastTokenAt = Date.now();
+                    break;
+                  case 'sources':
+                    assistantSources = Array.isArray(evt.sources) ? evt.sources : [];
+                    dispatch(setStreamedSources(assistantSources));
+                    lastTokenAt = Date.now();
+                    break;
                   case 'token':
                     assistantContent += evt.content ?? '';
                     dispatch(appendToken(evt.content ?? ''));
@@ -196,6 +210,7 @@ export function useChat() {
                       chat_id: chatId!, role: 'assistant', content: assistantContent,
                       model: evt.model_used ?? selectedModel, thinking_content: assistantThinking || null,
                       artifacts: [], attachments: [],
+                      sources: assistantSources,
                       input_tokens: evt.usage?.input_tokens ?? null,
                       output_tokens: evt.usage?.output_tokens ?? null,
                       credits_deducted: evt.credits_deducted ?? null,

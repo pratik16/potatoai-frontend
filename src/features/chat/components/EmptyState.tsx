@@ -1,64 +1,56 @@
+import { clsx } from 'clsx';
 import { useAppDispatch, useAppSelector } from '../../../app/hooks';
 import { setModel } from '../chatSlice';
 import { MODELS } from '../../../utils/modelConfig';
 
-const SUGGESTIONS = [
-  { icon: '✍️', label: 'Write a cover letter' },
-  { icon: '🐛', label: 'Debug my code'        },
-  { icon: '📋', label: 'Plan a project'        },
-  { icon: '📄', label: 'Summarise a doc'       },
-  { icon: '💡', label: 'Brainstorm ideas'      },
-  { icon: '✉️', label: 'Draft an email'        },
-];
+/** "Pratik" from "Pratik Sharma" — Gemini greets by first name only. */
+function firstName(full?: string | null, fallback?: string | null): string | null {
+  const name = (full ?? fallback ?? '').trim();
+  return name ? name.split(/\s+/)[0] : null;
+}
 
 export function EmptyState() {
   const dispatch      = useAppDispatch();
   const selectedModel = useAppSelector((s) => s.chat.selectedModel);
+  const user          = useAppSelector((s) => s.auth.user);
+
+  const name = firstName(user?.full_name, user?.username);
 
   return (
-    <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
-      <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-surface-3 px-3 py-1 text-xs text-gray-500">
-        <span className="h-1.5 w-1.5 rounded-full bg-potato-500" />
-        5 AI models · One interface
+    <div className="relative flex min-h-full flex-col items-center justify-center overflow-hidden px-6 pb-44 pt-20 text-center">
+      <div className="aurora" aria-hidden="true">
+        <div className="aurora__strip animate-aurora" />
       </div>
 
-      <h1 className="mb-3 text-3xl font-bold text-white">
-        Chat with the world's<br />
-        <span className="text-potato-500">best AI models</span>
-      </h1>
-      <p className="mb-8 text-sm text-gray-400">
-        Ask anything, plan projects, write code — powered by Claude, GPT, Gemini &amp; more.
-      </p>
+      <div className="relative">
+        <h1 className="mb-10 text-4xl font-light leading-[1.2] chat-prose">
+          {name ? `What can I help with, ${name}?` : 'What can I help with?'}
+        </h1>
 
-      <div className="mb-8 w-full max-w-lg">
-        <div className="flex flex-wrap justify-center gap-2">
-          {MODELS.map((m) => (
-            <button
-              key={m.slug}
-              onClick={() => dispatch(setModel(m.slug))}
-              className="flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs transition-colors"
-              style={
-                selectedModel === m.slug
-                  ? { borderColor: m.color, backgroundColor: m.color + '22', color: m.color }
-                  : { borderColor: '#2a2a2a', color: '#6b7280' }
-              }
-            >
-              <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: m.color }} />
-              {m.name}
-            </button>
-          ))}
+        {/* Kept because picking a model is real function, but deliberately
+            quiet — only the selected one carries any colour. */}
+        <div className="flex flex-wrap justify-center gap-1.5">
+          {MODELS.map((m) => {
+            const active = selectedModel === m.slug;
+            return (
+              <button
+                key={m.slug}
+                onClick={() => dispatch(setModel(m.slug))}
+                className={clsx(
+                  'flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs transition-colors',
+                  active ? 'bg-surface-2' : 'text-gray-500 hover:bg-surface-1 hover:text-gray-300',
+                )}
+                style={active ? { color: m.color } : undefined}
+              >
+                <span
+                  className={clsx('h-1.5 w-1.5 rounded-full transition-opacity', !active && 'opacity-40')}
+                  style={{ backgroundColor: m.color }}
+                />
+                {m.name}
+              </button>
+            );
+          })}
         </div>
-      </div>
-
-      <div className="flex flex-wrap justify-center gap-2">
-        {SUGGESTIONS.map((s) => (
-          <button
-            key={s.label}
-            className="flex items-center gap-1.5 rounded-lg border border-surface-3 bg-surface-2 px-3 py-1.5 text-xs text-gray-300 hover:border-potato-500 hover:text-white"
-          >
-            {s.icon} {s.label}
-          </button>
-        ))}
       </div>
     </div>
   );

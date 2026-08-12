@@ -13,7 +13,7 @@ export default function NewChatPage() {
   }, [dispatch]);
 
   return (
-    <div className="flex flex-1 flex-col overflow-hidden">
+    <div className="relative flex flex-1 flex-col overflow-hidden">
       <div className="flex-1 overflow-y-auto">
         <EmptyState />
       </div>

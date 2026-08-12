@@ -18,18 +18,18 @@ export function SidebarFooter({ user }: { user: User | null }) {
   };
 
   return (
-    <div className="border-t border-surface-3 p-2">
-      <a href="/settings" onClick={(e) => { e.preventDefault(); navigate('/settings'); }} className="flex items-center gap-2 rounded-lg px-2 py-2 text-sm text-gray-400 hover:bg-surface-2 hover:text-white">
+    <div className="p-2">
+      <a href="/settings" onClick={(e) => { e.preventDefault(); navigate('/settings'); }} className="flex items-center gap-2 rounded-full px-4 py-2 text-sm text-gray-400 hover:bg-surface-2 hover:text-white">
         <Settings className="h-4 w-4" /> Settings
       </a>
-      <a href="/usage" onClick={(e) => { e.preventDefault(); navigate('/usage'); }} className="flex items-center gap-2 rounded-lg px-2 py-2 text-sm text-gray-400 hover:bg-surface-2 hover:text-white">
+      <a href="/usage" onClick={(e) => { e.preventDefault(); navigate('/usage'); }} className="flex items-center gap-2 rounded-full px-4 py-2 text-sm text-gray-400 hover:bg-surface-2 hover:text-white">
         <BarChart2 className="h-4 w-4" /> Usage &amp; credits
       </a>
-      <button onClick={handleLogout} className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-sm text-gray-400 hover:bg-surface-2 hover:text-white">
+      <button onClick={handleLogout} className="flex w-full items-center gap-2 rounded-full px-4 py-2 text-sm text-gray-400 hover:bg-surface-2 hover:text-white">
         <LogOut className="h-4 w-4" /> Sign out
       </button>
       {user && (
-        <div className="mt-1 flex items-center gap-2 rounded-lg px-2 py-2">
+        <div className="mt-1 flex items-center gap-2 rounded-full px-4 py-2">
           <Avatar src={user.avatar_url} name={user.full_name ?? user.username} size="sm" />
           <div className="min-w-0 flex-1">
             <p className="truncate text-xs font-medium text-white">{user.full_name ?? user.username ?? user.name}</p>

@@ -31,6 +31,86 @@
   }
 }
 
+@layer components {
+  /**
+   * Ambient aurora — the mechanism Gemini uses for its empty-state glow:
+   * an oversized rotated repeating gradient, scrolled very slowly under a
+   * heavy blur. Gemini ramps through Google's brand rainbow; we ramp through
+   * our own violet/indigo/magenta so it reads as ours rather than borrowed.
+   */
+  .aurora {
+    position: absolute;
+    inset: 0;
+    /* Deliberately NOT overflow:hidden. Clipping here would hard-cut the strip
+       and `filter` would then blur that cut edge against transparency, ringing
+       a halo around the perimeter. The mask below confines it instead, and the
+       parent clips after the filter has already been applied. */
+    filter: blur(150px);
+    pointer-events: none;
+    /* Gemini's glow is barely there — the page still reads as near-black.
+       Anything above ~0.15 turns the whole surface into a colour wash. */
+    opacity: 0.13;
+    /* Concentrate it into a low-centre ellipse behind the composer and fade
+       to nothing at the edges, rather than bleeding to all four corners. */
+    -webkit-mask-image: radial-gradient(ellipse 65% 55% at 50% 62%, #000 0%, transparent 72%);
+    mask-image: radial-gradient(ellipse 65% 55% at 50% 62%, #000 0%, transparent 72%);
+  }
+
+  .aurora__strip {
+    position: absolute;
+    /* Oversized so the rotation never exposes a corner, and so the
+       -50% translate in the keyframe lands on a seamless repeat. */
+    top: -100%;
+    left: -100%;
+    width: 300%;
+    height: 300%;
+    transform-origin: center;
+    /* Base rotation, so reduced-motion (animation: none) still gets the angle. */
+    transform: rotate(-36deg);
+    /* Deep, desaturated stops. Saturated brand values at this blur radius
+       read as a purple gel over the page rather than ambient light. */
+    background: repeating-linear-gradient(
+      #3b1d80 0%,
+      #1e2a78 25%,
+      #6d1f6a 50%,
+      #1e2a78 75%,
+      #3b1d80 100%
+    );
+  }
+
+  /* The blur is expensive and the light schemes have no black to lift. */
+  [data-theme='claude'] .aurora,
+  [data-theme='light'] .aurora {
+    opacity: 0.06;
+  }
+
+  /**
+   * Chat body copy. Gemini sets responses at #e3e3e3 rather than pure white —
+   * it's most of why the surface reads calm. Driven by a variable so the
+   * light and Claude schemes don't inherit an unreadable near-white.
+   */
+  .chat-prose {
+    --chat-prose-fg: #e3e3e3;
+    color: var(--chat-prose-fg);
+  }
+
+  [data-theme='claude'] .chat-prose,
+  [data-theme='light'] .chat-prose {
+    --chat-prose-fg: var(--color-text-primary);
+  }
+
+  /* Tailwind Typography hardcodes its own colors; point them at ours. */
+  .chat-prose :where(p, li, blockquote, td, th, strong, h1, h2, h3, h4, h5, h6) {
+    color: var(--chat-prose-fg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aurora__strip {
+    animation: none !important;
+  }
+}
+
 /* Map hardcoded Tailwind grays to tokens on Claude theme */
 [data-color-scheme='claude'] .text-white,
 [data-color-scheme='claude'] .text-gray-200,
