@@ -49,7 +49,7 @@ export function Sidebar() {
 
       {/* New Chat */}
       <div className="shrink-0 px-2 pb-2">
-        <Link to="/chat/new" className="flex w-full items-center gap-2 rounded-lg bg-potato-600 px-3 py-2 text-sm font-medium text-white hover:bg-potato-700">
+        <Link to="/chat/new" className="sidebar-new-chat-btn flex w-full items-center gap-2 rounded-lg bg-potato-600 px-3 py-2 text-sm font-medium text-white hover:bg-potato-700">
           <Plus className="h-4 w-4" /> New chat
         </Link>
       </div>

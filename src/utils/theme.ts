@@ -66,12 +66,6 @@ export function applyTheme(uiTheme: UiTheme, mode: ThemeMode) {
   const root = document.documentElement;
   root.dataset.colorScheme = uiTheme;
 
-  if (uiTheme === 'claude') {
-    root.classList.remove('dark');
-    root.dataset.theme = 'claude';
-    return;
-  }
-
   const resolved = resolveThemeMode(mode);
   root.dataset.theme = resolved;
   root.classList.toggle('dark', resolved === 'dark');

@@ -144,28 +144,20 @@ export function AppearanceSection() {
           </div>
         </div>
 
-        {uiTheme === 'potato' && (
-          <div className="rounded-xl border border-surface-3 bg-surface-1 p-5">
-            <h3 className="mb-1 text-sm font-medium text-white">Mode</h3>
-            <p className="mb-4 text-xs text-gray-500">Dark, light, or match your system preference.</p>
-            <div className="flex flex-wrap gap-2">
-              {THEME_MODES.map((m) => (
-                <ModeButton
-                  key={m.id}
-                  label={m.label}
-                  selected={mode === m.id}
-                  onClick={() => save({ theme: m.id })}
-                />
-              ))}
-            </div>
+        <div className="rounded-xl border border-surface-3 bg-surface-1 p-5">
+          <h3 className="mb-1 text-sm font-medium text-white">Mode</h3>
+          <p className="mb-4 text-xs text-gray-500">Dark, light, or match your system preference.</p>
+          <div className="flex flex-wrap gap-2">
+            {THEME_MODES.map((m) => (
+              <ModeButton
+                key={m.id}
+                label={m.label}
+                selected={mode === m.id}
+                onClick={() => save({ theme: m.id })}
+              />
+            ))}
           </div>
-        )}
-
-        {uiTheme === 'claude' && (
-          <p className="text-xs text-gray-500">
-            Claude theme uses a warm cream palette inspired by claude.ai. Mode is fixed to light for this theme.
-          </p>
-        )}
+        </div>
       </div>
     </div>
   );

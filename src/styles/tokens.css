@@ -2,7 +2,7 @@
  * PotatoChat design tokens — vendored for standalone frontend CI.
  * Canonical copy in monorepo: shared/theme/tokens.css (keep in sync when editing).
  *
- * Switch theme: <html data-theme="light|dark|claude" data-color-scheme="potato|claude">
+ * Switch theme: <html data-theme="light|dark" data-color-scheme="potato|claude">
  */
 
 :root,
@@ -112,32 +112,32 @@
   --scrollbar-thumb: #d1d5db;
 }
 
-/* Claude — warm editorial palette (inspired by claude.ai) */
-[data-color-scheme='claude'],
-[data-theme='claude'] {
+/* Claude — matches claude.ai's actual palette (sampled from the live site) */
+[data-color-scheme='claude'][data-theme='light'],
+[data-color-scheme='claude']:not([data-theme='dark']) {
   color-scheme: light;
 
-  --color-bg-0: #faf9f5;
-  --color-bg-1: #f5f4ed;
-  --color-bg-2: #efe9de;
-  --color-bg-3: #e8e0d2;
-  --color-bg-4: #ddd6c8;
+  --color-bg-0: #fcfcfb;
+  --color-bg-1: #fcfcfb;
+  --color-bg-2: #f0f0ee;
+  --color-bg-3: #e8e7e3;
+  --color-bg-4: #ddd9d3;
 
-  --color-brand-primary: #c96442;
-  --color-brand-accent: #cc785c;
-  --color-brand-primary-pressed: #a9583e;
+  --color-brand-primary: #c6613f;
+  --color-brand-accent: #d97757;
+  --color-brand-primary-pressed: #a44f30;
   --color-brand-primary-muted: color-mix(in srgb, var(--color-brand-primary) 12%, transparent);
   --color-brand-on-primary: #ffffff;
 
-  --color-text-primary: #141413;
-  --color-text-secondary: #6c6a64;
-  --color-text-tertiary: #8e8b82;
-  --color-text-link: #a9583e;
+  --color-text-primary: #0b0b0b;
+  --color-text-secondary: #52514e;
+  --color-text-tertiary: #a8a8a6;
+  --color-text-link: #c6613f;
 
-  --color-border-subtle: rgb(20 20 19 / 8%);
-  --color-border-strong: rgb(20 20 19 / 14%);
+  --color-border-subtle: rgb(11 11 11 / 8%);
+  --color-border-strong: rgb(11 11 11 / 14%);
 
-  --color-error: #dc2626;
+  --color-error: #d03b3b;
   --color-error-muted: color-mix(in srgb, var(--color-error) 12%, transparent);
   --color-warning: #d97706;
   --color-warning-bg: #fef3c7;
@@ -147,11 +147,53 @@
 
   --color-plan-free: #d97706;
 
-  --color-model-claude: #c96442;
+  --color-model-claude: #c6613f;
   --color-model-openai: #059669;
   --color-model-gemini: #2563eb;
   --color-model-qwen: #dc2626;
   --color-model-minimax: #9333ea;
 
-  --scrollbar-thumb: #ddd6c8;
+  --scrollbar-thumb: #ddd9d3;
+}
+
+[data-color-scheme='claude'][data-theme='dark'] {
+  color-scheme: dark;
+
+  --color-bg-0: #151515;
+  --color-bg-1: #151515;
+  --color-bg-2: #212121;
+  --color-bg-3: #2c2c2c;
+  --color-bg-4: #383838;
+
+  --color-brand-primary: #c6613f;
+  --color-brand-accent: #d97757;
+  --color-brand-primary-pressed: #a44f30;
+  --color-brand-primary-muted: color-mix(in srgb, var(--color-brand-primary) 13%, transparent);
+  --color-brand-on-primary: #ffffff;
+
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #c3c2b7;
+  --color-text-tertiary: #676767;
+  --color-text-link: #d97757;
+
+  --color-border-subtle: rgb(255 255 255 / 8%);
+  --color-border-strong: rgb(255 255 255 / 14%);
+
+  --color-error: #ef4444;
+  --color-error-muted: color-mix(in srgb, var(--color-error) 15%, transparent);
+  --color-warning: #f59e0b;
+  --color-warning-bg: #451a03;
+  --color-warning-text: #fef3c7;
+  --color-success: #10b981;
+  --color-success-muted: color-mix(in srgb, var(--color-success) 15%, transparent);
+
+  --color-plan-free: #f59e0b;
+
+  --color-model-claude: #c6613f;
+  --color-model-openai: #10b981;
+  --color-model-gemini: #3b82f6;
+  --color-model-qwen: #ef4444;
+  --color-model-minimax: #a855f7;
+
+  --scrollbar-thumb: #383838;
 }

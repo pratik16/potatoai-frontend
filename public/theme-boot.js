@@ -10,12 +10,6 @@
     var root = document.documentElement;
     root.dataset.colorScheme = uiTheme;
 
-    if (uiTheme === 'claude') {
-      root.classList.remove('dark');
-      root.dataset.theme = 'claude';
-      return;
-    }
-
     var resolved = resolveMode(mode);
     root.dataset.theme = resolved;
     root.classList.toggle('dark', resolved === 'dark');

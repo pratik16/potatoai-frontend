@@ -52,3 +52,37 @@
 [data-color-scheme='claude'] .group:hover .group-hover\:text-white {
   color: var(--color-text-primary);
 }
+
+/* claude.ai's own "New chat" control is a plain ghost button (no fill) —
+   override the potato-brand solid button used elsewhere in the app. */
+[data-color-scheme='claude'] .sidebar-new-chat-btn {
+  background-color: transparent;
+  color: var(--color-text-secondary);
+}
+
+[data-color-scheme='claude'] .sidebar-new-chat-btn:hover {
+  background-color: var(--color-bg-3);
+  color: var(--color-text-primary);
+}
+
+/* Tailwind Typography's prose-invert sets its own color vars (not text-*
+   utility classes), so it skips the overrides above and renders near-white
+   markdown text on the light Claude background. Re-point those vars. */
+[data-color-scheme='claude'] .prose-invert {
+  --tw-prose-body: var(--color-text-primary);
+  --tw-prose-headings: var(--color-text-primary);
+  --tw-prose-lead: var(--color-text-secondary);
+  --tw-prose-links: var(--color-brand-primary);
+  --tw-prose-bold: var(--color-text-primary);
+  --tw-prose-counters: var(--color-text-secondary);
+  --tw-prose-bullets: var(--color-text-tertiary);
+  --tw-prose-hr: var(--color-border-subtle);
+  --tw-prose-quotes: var(--color-text-primary);
+  --tw-prose-quote-borders: var(--color-border-strong);
+  --tw-prose-captions: var(--color-text-secondary);
+  --tw-prose-code: var(--color-text-primary);
+  --tw-prose-pre-code: var(--color-text-primary);
+  --tw-prose-pre-bg: var(--color-bg-2);
+  --tw-prose-th-borders: var(--color-border-strong);
+  --tw-prose-td-borders: var(--color-border-subtle);
+}
