@@ -46,7 +46,7 @@ export function MessageBubble({ message }: { message: Message }) {
         </div>
       )}
 
-      <div className={clsx('max-w-[75%]', isUser && 'text-right')}>
+      <div className="max-w-[75%]">
         {!isUser && message.model && (
           <div className="mb-1 flex items-center gap-2">
             <span className="text-xs font-medium" style={{ color: MODEL_COLORS[message.model] }}>
