@@ -16,12 +16,13 @@
   }
 
   try {
+    // Potato is temporarily hidden from the appearance picker pending a redesign;
+    // force Claude even for accounts with an old stored ui_theme of 'potato'.
+    var uiTheme = 'claude';
     var auth = JSON.parse(localStorage.getItem('auth') || 'null');
-    var uiTheme = (auth && auth.user && auth.user.ui_theme) || localStorage.getItem('potatochat_ui_theme') || 'potato';
     var mode = (auth && auth.user && auth.user.theme) || 'dark';
-    if (uiTheme !== 'potato' && uiTheme !== 'claude') uiTheme = 'potato';
     apply(uiTheme, mode);
   } catch (e) {
-    apply('potato', 'dark');
+    apply('claude', 'dark');
   }
 })();
