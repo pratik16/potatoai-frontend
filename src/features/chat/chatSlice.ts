@@ -8,6 +8,7 @@ const initialState: ChatState = {
   selectedModel:  DEFAULT_MODEL,
   chats:          [],
   activeMessages: [],
+  outOfCredits:   false,
 };
 
 const chatSlice = createSlice({
@@ -57,6 +58,9 @@ const chatSlice = createSlice({
     clearMessages: (state) => {
       state.activeMessages = [];
     },
+    setOutOfCredits: (state, action: PayloadAction<boolean>) => {
+      state.outOfCredits = action.payload;
+    },
   },
 });
 
@@ -73,6 +77,7 @@ export const {
   updateLastMessage,
   updateMessageById,
   clearMessages,
+  setOutOfCredits,
 } = chatSlice.actions;
 
 export default chatSlice.reducer;

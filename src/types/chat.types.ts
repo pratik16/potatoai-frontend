@@ -53,6 +53,8 @@ export interface ChatState {
   selectedModel:  string;
   chats:          ChatMeta[];
   activeMessages: Message[];
+  /** Set when the API rejects a send with code INSUFFICIENT_CREDITS. */
+  outOfCredits:   boolean;
 }
 
 export interface SendMessageRequest {

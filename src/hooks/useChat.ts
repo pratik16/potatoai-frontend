@@ -5,10 +5,11 @@ import { useAppDispatch, useAppSelector } from '../app/hooks';
 import {
   startStream, appendToken, appendThinking, updateArtifact, stopStream, resetStream,
 } from '../features/chat/streamingSlice';
-import { addMessage, prependChat, setActiveChat, updateMessageById } from '../features/chat/chatSlice';
+import { addMessage, prependChat, setActiveChat, updateMessageById, setOutOfCredits } from '../features/chat/chatSlice';
 import { updateUser } from '../features/auth/authSlice';
 import { showToast } from '../app/uiSlice';
 import { chatApi } from '../features/chat/chatApi';
+import { settingsApi } from '../features/settings/settingsApi';
 import type { Message } from '../types/chat.types';
 
 const STREAM_TIMEOUT_MS = 30_000;
@@ -40,11 +41,13 @@ export async function pollImageAsset(
   }
 }
 
+// Keys are the SCREAMING_SNAKE_CASE `code` values the API returns — both on an HTTP
+// error body and on the `error` SSE frame. See backend/CLAUDE.md §1.
 const STREAM_ERRORS: Record<string, string> = {
-  rate_limit:            "You've reached your limit. Upgrade to Pro.",
-  insufficient_credits:  "You're out of credits. Upgrade to continue.",
-  context_too_long:      'This chat is near the context limit. Start a new chat.',
-  provider_error:        'AI provider error. Please try again.',
+  RATE_LIMIT_EXCEEDED:   "You've reached your limit. Upgrade to Pro.",
+  INSUFFICIENT_CREDITS:  "You're out of credits. Upgrade to continue.",
+  CONTEXT_TOO_LONG:      'This chat is near the context limit. Start a new chat.',
+  PROVIDER_ERROR:        'AI provider error. Please try again.',
 };
 
 export function useChat() {
@@ -148,10 +151,19 @@ export function useChat() {
           if (!res.ok) {
             const err = await res.json().catch(() => ({}));
             const msg = STREAM_ERRORS[err.code ?? ''] ?? err.message ?? `HTTP ${res.status}`;
+            // Branch on the machine-readable code, never the copy — see web/CLAUDE.md.
+            if (err.code === 'INSUFFICIENT_CREDITS') {
+              dispatch(setOutOfCredits(true));
+              // The rejection means the server balance is lower than we think.
+              dispatch(settingsApi.util.invalidateTags(['Credits']));
+            }
             dispatch(showToast({ message: msg, type: 'error' }));
             dispatch(resetStream());
             return;
           }
+
+          // The send was accepted, so the account is spendable again.
+          dispatch(setOutOfCredits(false));
 
           const reader  = res.body!.getReader();
           const decoder = new TextDecoder();
@@ -215,10 +227,13 @@ export function useChat() {
                   }
                   case 'error': {
                     const msg = STREAM_ERRORS[evt.code ?? ''] ?? evt.message ?? 'Stream error';
-                    if (evt.code === 'provider_error' && retryCount < 1) {
+                    if (evt.code === 'PROVIDER_ERROR' && retryCount < 1) {
                       retryCount++;
                       setTimeout(() => doStream(), 2000);
                       return;
+                    }
+                    if (evt.code === 'INSUFFICIENT_CREDITS') {
+                      dispatch(setOutOfCredits(true));
                     }
                     dispatch(showToast({ message: msg, type: 'error' }));
                     break;
@@ -236,6 +251,10 @@ export function useChat() {
           dispatch(stopStream());
           abortRef.current = null;
           dispatch(chatApi.util.invalidateTags([{ type: 'Chat', id: chatId! }, 'Chat']));
+          // Every turn now costs credits, so the cached balance is stale the
+          // moment a stream ends. Nothing invalidated this tag before, which
+          // left Settings/Billing showing a balance that never moved.
+          dispatch(settingsApi.util.invalidateTags(['Credits']));
         }
 
         // Poll for image result if an image-edit job was dispatched

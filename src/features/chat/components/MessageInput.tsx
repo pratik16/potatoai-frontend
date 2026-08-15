@@ -26,6 +26,7 @@ export function MessageInput({ projectId = null }: MessageInputProps) {
   const { sendMessage, stopGeneration } = useChat();
   const isStreaming  = useAppSelector((s) => s.streaming.isStreaming);
   const activeChatId = useAppSelector((s) => s.chat.activeChatId);
+  const outOfCredits = useAppSelector((s) => s.chat.outOfCredits);
 
   // Restore draft
   useEffect(() => {
@@ -164,7 +165,8 @@ export function MessageInput({ projectId = null }: MessageInputProps) {
             ) : (
               <button
                 onClick={handleSend}
-                disabled={!value.trim()}
+                disabled={!value.trim() || outOfCredits}
+                title={outOfCredits ? 'Out of credits' : undefined}
                 className="flex h-7 w-7 items-center justify-center rounded-lg bg-potato-600 text-white hover:bg-potato-700 disabled:opacity-40"
               >
                 <Send className="h-3.5 w-3.5" />
@@ -173,9 +175,16 @@ export function MessageInput({ projectId = null }: MessageInputProps) {
           </div>
         </div>
 
-        <p className="mt-2 text-center text-xs text-gray-600">
-          PotatoChat can make mistakes. Verify important information.
-        </p>
+        {outOfCredits ? (
+          <p className="mt-2 text-center text-xs text-red-400">
+            You're out of credits.{' '}
+            <a href="/usage" className="underline hover:text-red-300">Add more to keep chatting.</a>
+          </p>
+        ) : (
+          <p className="mt-2 text-center text-xs text-gray-600">
+            PotatoChat can make mistakes. Verify important information.
+          </p>
+        )}
 
         <input
           ref={fileInputRef}
