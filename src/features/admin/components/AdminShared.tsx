@@ -207,3 +207,25 @@ export function formatRelativeTime(d: string) {
 export function currentMonth() {
   return new Date().toISOString().slice(0, 7);
 }
+
+/**
+ * Postgres numerics arrive as JSON strings, both from Laravel's `decimal:n`
+ * casts and from raw SUM() aliases (where casts don't apply at all). Calling
+ * .toFixed() on those throws, so coerce at the render boundary.
+ */
+export function num(v: number | string | null | undefined): number {
+  const n = typeof v === 'string' ? parseFloat(v) : v;
+  return typeof n === 'number' && Number.isFinite(n) ? n : 0;
+}
+
+/** num() + toFixed, returning an em-dash for absent values rather than "0.00". */
+export function formatNumeric(v: number | string | null | undefined, digits = 2): string {
+  if (v === null || v === undefined || v === '') return '—';
+  return num(v).toFixed(digits);
+}
+
+/** Thousands-grouped integer, tolerant of numeric strings. */
+export function formatCount(v: number | string | null | undefined): string {
+  if (v === null || v === undefined || v === '') return '—';
+  return num(v).toLocaleString();
+}

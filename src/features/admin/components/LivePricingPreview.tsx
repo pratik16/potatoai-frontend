@@ -1,4 +1,5 @@
 import type { CreditsConfig, NewPricingData } from '../../../types/admin.types';
+import { num } from './AdminShared';
 
 interface PreviewData {
   marginMultiplier:    number;
@@ -11,15 +12,20 @@ interface PreviewData {
 }
 
 export function calculatePreview(form: Pick<NewPricingData, 'provider_input_price_per_1m' | 'provider_output_price_per_1m' | 'margin_percent'>, config: CreditsConfig): PreviewData {
-  const marginMul     = 1 / (1 - form.margin_percent / 100);
-  const creditIn1k    = (form.provider_input_price_per_1m  / 1000) * marginMul / config.usd_per_credit;
-  const creditOut1k   = (form.provider_output_price_per_1m / 1000) * marginMul / config.usd_per_credit;
-  const free          = config.free_plan_monthly_credits;
+  // Mirrors AdminPricingController::store — keep the two in step.
+  // margin_percent is validated max:99 server-side; clamp here too so a form
+  // value of 100+ can't render a negative or infinite multiplier.
+  const margin        = Math.min(num(form.margin_percent), 99);
+  const usdPerCredit  = num(config.usd_per_credit);
+  const marginMul     = 1 / (1 - margin / 100);
+  const creditIn1k    = usdPerCredit > 0 ? (num(form.provider_input_price_per_1m)  / 1000) * marginMul / usdPerCredit : 0;
+  const creditOut1k   = usdPerCredit > 0 ? (num(form.provider_output_price_per_1m) / 1000) * marginMul / usdPerCredit : 0;
+  const free          = num(config.free_plan_monthly_credits);
   const maxInput      = creditIn1k  > 0 ? (free / creditIn1k)  * 1000 : Infinity;
   const maxOutput     = creditOut1k > 0 ? (free / creditOut1k) * 1000 : Infinity;
   const avgCostPerMsg = (creditIn1k * 0.5) + (creditOut1k * 0.5);
   const approxMsgs    = avgCostPerMsg > 0 ? Math.floor(free / avgCostPerMsg) : Infinity;
-  const grossProfit   = 100 * (form.margin_percent / 100) * marginMul;
+  const grossProfit   = 100 * (margin / 100) * marginMul;
 
   return {
     marginMultiplier:    marginMul,
@@ -45,14 +51,14 @@ export function LivePricingPreview({
     <div className="rounded-lg border border-gray-700 bg-gray-900 p-5 font-mono text-sm">
       <p className="mb-4 text-xs font-bold uppercase tracking-widest text-gray-400">Live Calculation Preview</p>
 
-      <Row label="USD per credit" value={`$${config.usd_per_credit}`} />
-      <Row label="Margin multiplier" value={`${p.marginMultiplier.toFixed(4)}  (${form.margin_percent}% margin)`} />
+      <Row label="USD per credit" value={`$${num(config.usd_per_credit)}`} />
+      <Row label="Margin multiplier" value={`${p.marginMultiplier.toFixed(4)}  (${num(form.margin_percent)}% margin)`} />
 
       <Divider />
       <Row label="Credits / 1K input"  value={`${p.creditPerInput1k.toFixed(4)} credits`}  color="text-blue-400" />
       <Row label="Credits / 1K output" value={`${p.creditPerOutput1k.toFixed(4)} credits`} color="text-blue-400" />
 
-      <Divider label={`Free user (${config.free_plan_monthly_credits} credits)`} />
+      <Divider label={`Free user (${num(config.free_plan_monthly_credits)} credits)`} />
       <Row label="Max input tokens"  value={`≈ ${fmt(p.freeUserMaxInput)}`} />
       <Row label="Max output tokens" value={`≈ ${fmt(p.freeUserMaxOutput)}`} />
       <Row label="Typical messages"  value={`≈ ${fmt(p.freeUserApproxMsgs)} exchanges`} />

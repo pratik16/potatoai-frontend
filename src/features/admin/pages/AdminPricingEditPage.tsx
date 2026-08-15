@@ -1,35 +1,51 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useGetAdminModelsQuery, useSavePricingMutation, useGetCreditsConfigQuery } from '../adminApi';
-import { PageHeader } from '../components/AdminShared';
+import { PageHeader, num } from '../components/AdminShared';
 import { LivePricingPreview } from '../components/LivePricingPreview';
 
 export default function AdminPricingEditPage() {
   const { id }       = useParams<{ id: string }>();
   const navigate     = useNavigate();
-  const { data: models }  = useGetAdminModelsQuery();
-  const { data: config }  = useGetCreditsConfigQuery();
+  const { data: models, isLoading: modelsLoading } = useGetAdminModelsQuery();
+  const { data: config, isLoading: configLoading } = useGetCreditsConfigQuery();
   const [save, { isLoading }] = useSavePricingMutation();
   const model = models?.find((m) => m.id === Number(id));
 
   const [form, setForm] = useState({
-    provider_input_price_per_1m:  model?.active_pricing?.provider_input_price_per_1m  ?? 0,
-    provider_output_price_per_1m: model?.active_pricing?.provider_output_price_per_1m ?? 0,
-    margin_percent:               model?.active_pricing?.margin_percent ?? 30,
+    provider_input_price_per_1m:  0,
+    provider_output_price_per_1m: 0,
+    margin_percent:               30,
     effective_from:               new Date().toISOString().slice(0, 16),
     notes:                        '',
   });
   const [error, setError] = useState('');
 
-  const previewConfig = config ?? {
-    id: 0, usd_per_credit: 0.001, reserve_percent: 10,
-    free_plan_monthly_credits: 50, pro_plan_monthly_credits: 1000, team_plan_monthly_credits: 5000,
-  };
+  // On a direct load of /admin/pricing/:id/edit the models query is still in
+  // flight during first render, so seeding useState alone left the form on
+  // 0 / 0 / 30% — and saving that writes a zero-cost row into an append-only
+  // table that the UI cannot undo. Resync once the model arrives.
+  const activePricing = model?.active_pricing;
+  useEffect(() => {
+    if (!activePricing) return;
+    setForm((prev) => ({
+      ...prev,
+      provider_input_price_per_1m:  num(activePricing.provider_input_price_per_1m),
+      provider_output_price_per_1m: num(activePricing.provider_output_price_per_1m),
+      margin_percent:               num(activePricing.margin_percent),
+    }));
+  }, [activePricing]);
 
   const previewForm = useMemo(() => ({ ...form }), [form]);
 
   const handleSave = async () => {
     setError('');
+    // Mirrors the server-side rule (AdminPricingController: margin max:99);
+    // at 100 the margin multiplier is infinite.
+    if (form.margin_percent < 0 || form.margin_percent > 99) {
+      setError('Margin must be between 0 and 99%.');
+      return;
+    }
     try {
       await save({ modelId: Number(id), data: { ...form, effective_from: new Date(form.effective_from).toISOString() } }).unwrap();
       navigate('/admin/pricing');
@@ -50,6 +66,17 @@ export default function AdminPricingEditPage() {
       />
     </div>
   );
+
+  // The preview divides by usd_per_credit and the form seeds from active_pricing;
+  // rendering either before they load showed fabricated numbers.
+  if (modelsLoading || configLoading || !config) {
+    return (
+      <div>
+        <PageHeader title="Edit Pricing" backTo="/admin/pricing" />
+        <p className="text-sm text-gray-500">Loading model and credits config…</p>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -86,7 +113,7 @@ export default function AdminPricingEditPage() {
           </p>
         </div>
 
-        <LivePricingPreview form={previewForm} config={previewConfig} />
+        <LivePricingPreview form={previewForm} config={config} />
       </div>
     </div>
   );

@@ -1,13 +1,25 @@
 import { useState } from 'react';
-import { useGetRevenueQuery, useGetUsageAnalyticsQuery } from '../adminApi';
-import { PageHeader, StatCard, currentMonth } from '../components/AdminShared';
+import { useGetCreditsConfigQuery, useGetRevenueQuery, useGetUsageAnalyticsQuery } from '../adminApi';
+import { PageHeader, StatCard, currentMonth, formatCount, formatNumeric, num } from '../components/AdminShared';
 
 export default function AdminAnalyticsPage() {
   const [month, setMonth]      = useState(currentMonth());
   const { data: revenue }      = useGetRevenueQuery({ month });
   const { data: usage }        = useGetUsageAnalyticsQuery({ month });
+  const { data: config }       = useGetCreditsConfigQuery();
 
-  const maxMessages = Math.max(...(usage?.daily.map((d) => d.messages) ?? [1]), 1);
+  const maxMessages = Math.max(...(usage?.daily.map((d) => num(d.messages)) ?? [1]), 1);
+
+  // USD-per-credit is admin-editable on /admin/credits-config; hardcoding it
+  // here silently desynced this figure from the rest of the panel.
+  const usdPerCredit = num(config?.usd_per_credit);
+  const creditRevenue = revenue ? num(revenue.credits_spent) * usdPerCredit : 0;
+  const providerCost  = num(revenue?.provider_cost.total_usd);
+  // Guard the divisor, not the numerator — the old check was on total_usd and
+  // produced -Infinity% whenever cost was non-zero but nothing had been spent.
+  const grossMargin = creditRevenue > 0
+    ? `${((creditRevenue - providerCost) / creditRevenue * 100).toFixed(1)}%`
+    : '—';
 
   return (
     <div>
@@ -25,16 +37,13 @@ export default function AdminAnalyticsPage() {
 
       {/* Revenue cards */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard label="Provider Cost (USD)"  value={`$${revenue?.provider_cost.total_usd ?? 0}`} />
-        <StatCard label="Credits Granted"      value={revenue?.credits_granted.toFixed(2)} />
-        <StatCard label="Credits Spent"        value={revenue?.credits_spent.toFixed(2)} />
+        <StatCard label="Provider Cost (USD)"  value={`$${providerCost.toFixed(2)}`} />
+        <StatCard label="Credits Granted"      value={formatNumeric(revenue?.credits_granted)} />
+        <StatCard label="Credits Spent"        value={formatNumeric(revenue?.credits_spent)} />
         <StatCard
           label="Gross Margin"
-          value={
-            revenue && revenue.provider_cost.total_usd > 0
-              ? `${(((revenue.credits_spent * 0.001) - revenue.provider_cost.total_usd) / (revenue.credits_spent * 0.001) * 100).toFixed(1)}%`
-              : '—'
-          }
+          value={grossMargin}
+          sub={usdPerCredit > 0 ? `at $${usdPerCredit} / credit` : undefined}
         />
       </div>
 
@@ -55,8 +64,8 @@ export default function AdminAnalyticsPage() {
                 {revenue.provider_cost.by_model.map((row) => (
                   <tr key={row.model}>
                     <td className="px-4 py-3 text-white">{row.model}</td>
-                    <td className="px-4 py-3 text-gray-300">${row.cost_usd.toFixed(4)}</td>
-                    <td className="px-4 py-3 text-gray-400">{row.tokens.toLocaleString()}</td>
+                    <td className="px-4 py-3 text-gray-300">${formatNumeric(row.cost_usd, 4)}</td>
+                    <td className="px-4 py-3 text-gray-400">{formatCount(row.tokens)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -68,15 +77,27 @@ export default function AdminAnalyticsPage() {
       {/* Daily messages bar chart */}
       {!!usage?.daily.length && (
         <div className="mt-6">
-          <h3 className="mb-3 font-semibold text-white">Daily Messages</h3>
+          <div className="mb-3 flex items-baseline justify-between">
+            <h3 className="font-semibold text-white">Daily Messages</h3>
+            <span className="text-xs text-gray-500">
+              {formatCount(usage.daily.reduce((s, d) => s + num(d.input_tokens), 0))} in ·{' '}
+              {formatCount(usage.daily.reduce((s, d) => s + num(d.output_tokens), 0))} out tokens
+            </span>
+          </div>
           <div className="rounded-lg border border-gray-800 bg-gray-900 p-4">
             <div className="flex items-end gap-1" style={{ height: 120 }}>
               {usage.daily.map((d) => (
                 <div key={d.date} className="group flex flex-1 flex-col items-center gap-1">
                   <div
-                    title={`${d.date}: ${d.messages} messages`}
+                    title={
+                      `${d.date}: ${formatCount(d.messages)} messages · ` +
+                      `${formatCount(d.input_tokens)} in / ${formatCount(d.output_tokens)} out tokens`
+                    }
                     className="w-full rounded-t bg-purple-700/70 transition-colors hover:bg-purple-600"
-                    style={{ height: `${(d.messages / maxMessages) * 100}%`, minHeight: d.messages > 0 ? 2 : 0 }}
+                    style={{
+                      height: `${(num(d.messages) / maxMessages) * 100}%`,
+                      minHeight: num(d.messages) > 0 ? 2 : 0,
+                    }}
                   />
                   <span className="text-xs text-gray-600">{d.date.slice(8)}</span>
                 </div>

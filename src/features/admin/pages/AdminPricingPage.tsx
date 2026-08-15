@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useGetAdminPricingQuery } from '../adminApi';
-import { PageHeader, AdminTable, Skeleton, formatDate } from '../components/AdminShared';
+import { PageHeader, AdminTable, Skeleton, formatDate, formatNumeric } from '../components/AdminShared';
 
 export default function AdminPricingPage() {
   const { data: models, isLoading } = useGetAdminPricingQuery();
@@ -23,8 +23,8 @@ export default function AdminPricingPage() {
               <td className="px-4 py-3 text-gray-300">{m.active_pricing?.provider_input_price_per_1m ?? '—'}</td>
               <td className="px-4 py-3 text-gray-300">{m.active_pricing?.provider_output_price_per_1m ?? '—'}</td>
               <td className="px-4 py-3 text-gray-300">{m.active_pricing?.margin_percent ?? '—'}%</td>
-              <td className="px-4 py-3 text-gray-300">{m.active_pricing?.credit_per_input_1k?.toFixed(4) ?? '—'}</td>
-              <td className="px-4 py-3 text-gray-300">{m.active_pricing?.credit_per_output_1k?.toFixed(4) ?? '—'}</td>
+              <td className="px-4 py-3 text-gray-300">{formatNumeric(m.active_pricing?.credit_per_input_1k, 4)}</td>
+              <td className="px-4 py-3 text-gray-300">{formatNumeric(m.active_pricing?.credit_per_output_1k, 4)}</td>
               <td className="px-4 py-3 text-xs text-gray-400">{formatDate(m.active_pricing?.effective_from)}</td>
               <td className="px-4 py-3 flex gap-3">
                 <Link to={`/admin/pricing/${m.id}/edit`} className="text-xs text-purple-400 hover:text-purple-300">

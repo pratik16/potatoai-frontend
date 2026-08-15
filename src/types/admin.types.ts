@@ -3,6 +3,14 @@ export interface AdminState {
   currentIp:        string | null;
 }
 
+/**
+ * A Postgres numeric/decimal column. Laravel's `decimal:n` casts serialise as
+ * JSON strings, and raw SUM() aliases skip casts entirely and come back as
+ * strings too — so never call .toFixed() on one directly. Pass it through
+ * `num()` / `formatNumeric()` from features/admin/components/AdminShared.
+ */
+export type Numeric = number | string;
+
 export interface DashboardData {
   credits:  { granted_this_month: number; spent_this_month: number; remaining_pool: number };
   cost:     { provider_cost_usd_this_month: number; estimated_revenue_usd: number; gross_margin_percent: number };
@@ -13,11 +21,11 @@ export interface DashboardData {
 export interface ActivePricing {
   id:                            number;
   model_id:                      number;
-  provider_input_price_per_1m:   number;
-  provider_output_price_per_1m:  number;
-  margin_percent:                number;
-  credit_per_input_1k:           number;
-  credit_per_output_1k:          number;
+  provider_input_price_per_1m:   Numeric;
+  provider_output_price_per_1m:  Numeric;
+  margin_percent:                Numeric;
+  credit_per_input_1k:           Numeric;
+  credit_per_output_1k:          Numeric;
   effective_from:                string;
   created_by_ip:                 string;
   notes:                         string | null;
@@ -35,7 +43,7 @@ export interface AdminModel {
   active_pricing: ActivePricing | null;
 }
 
-export interface PricingRow extends ActivePricing {}
+export type PricingRow = ActivePricing;
 
 export interface NewPricingData {
   provider_input_price_per_1m:  number;
@@ -47,11 +55,11 @@ export interface NewPricingData {
 
 export interface CreditsConfig {
   id:                        number;
-  usd_per_credit:            number;
-  reserve_percent:           number;
-  free_plan_monthly_credits: number;
-  pro_plan_monthly_credits:  number;
-  team_plan_monthly_credits: number;
+  usd_per_credit:            Numeric;
+  reserve_percent:           Numeric;
+  free_plan_monthly_credits: Numeric;
+  pro_plan_monthly_credits:  Numeric;
+  team_plan_monthly_credits: Numeric;
 }
 
 export interface IpEntry {
@@ -105,11 +113,11 @@ export interface AdminUser {
   name:                   string;
   email:                  string;
   plan:                   string;
-  credit_balance:         number;
+  credit_balance:         Numeric;
   is_suspended:           boolean;
   created_at:             string;
-  messages_this_month?:   number;
-  credits_used_this_month?: number;
+  messages_this_month?:   Numeric;
+  credits_used_this_month?: Numeric;
 }
 
 export interface UsersResponse {
@@ -126,14 +134,14 @@ export interface UserListParams {
 
 export interface RevenueData {
   month:           string;
-  provider_cost:   { total_usd: number; by_model: { model: string; cost_usd: number; tokens: number }[] };
-  credits_granted: number;
-  credits_spent:   number;
+  provider_cost:   { total_usd: Numeric; by_model: { model: string; cost_usd: Numeric; tokens: Numeric }[] };
+  credits_granted: Numeric;
+  credits_spent:   Numeric;
 }
 
 export interface UsageAnalyticsData {
-  daily:    { date: string; messages: number; input_tokens: number; output_tokens: number }[];
-  by_model: { model: string; messages: number; percent: number }[];
+  daily:    { date: string; messages: Numeric; input_tokens: Numeric; output_tokens: Numeric }[];
+  by_model: { model: string; messages: Numeric; percent: Numeric }[];
 }
 
 export interface PricingHistoryResponse {

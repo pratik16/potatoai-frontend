@@ -1,6 +1,6 @@
 import { useParams } from 'react-router-dom';
 import { useGetPricingHistoryQuery } from '../adminApi';
-import { PageHeader, AdminTable, Skeleton, formatDateTime } from '../components/AdminShared';
+import { PageHeader, AdminTable, Skeleton, formatDateTime, formatNumeric } from '../components/AdminShared';
 
 export default function AdminPricingHistoryPage() {
   const { id } = useParams<{ id: string }>();
@@ -25,8 +25,8 @@ export default function AdminPricingHistoryPage() {
               <td className="px-4 py-3 text-gray-300">{row.provider_input_price_per_1m}</td>
               <td className="px-4 py-3 text-gray-300">{row.provider_output_price_per_1m}</td>
               <td className="px-4 py-3 text-gray-300">{row.margin_percent}%</td>
-              <td className="px-4 py-3 text-gray-300">{row.credit_per_input_1k?.toFixed(4)}</td>
-              <td className="px-4 py-3 text-gray-300">{row.credit_per_output_1k?.toFixed(4)}</td>
+              <td className="px-4 py-3 text-gray-300">{formatNumeric(row.credit_per_input_1k, 4)}</td>
+              <td className="px-4 py-3 text-gray-300">{formatNumeric(row.credit_per_output_1k, 4)}</td>
               <td className="px-4 py-3 text-xs text-gray-500">{row.notes ?? '—'}</td>
               <td className="px-4 py-3 text-xs text-gray-500">{row.created_by_ip}</td>
             </tr>

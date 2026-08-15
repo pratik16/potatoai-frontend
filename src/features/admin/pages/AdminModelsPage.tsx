@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useGetAdminModelsQuery, useToggleModelMutation } from '../adminApi';
-import { PageHeader, Toggle, AdminTable, Skeleton, formatDate } from '../components/AdminShared';
+import { PageHeader, Toggle, AdminTable, Skeleton, formatDate, formatNumeric } from '../components/AdminShared';
 import type { AdminModel } from '../../../types/admin.types';
 
 export default function AdminModelsPage() {
@@ -33,8 +33,8 @@ export default function AdminModelsPage() {
               <td className="px-4 py-3">
                 <Toggle checked={m.is_pro_only} onChange={(v) => handle(m, 'is_pro_only', v)} />
               </td>
-              <td className="px-4 py-3 text-gray-300">{m.active_pricing?.credit_per_input_1k?.toFixed(4) ?? '—'}</td>
-              <td className="px-4 py-3 text-gray-300">{m.active_pricing?.credit_per_output_1k?.toFixed(4) ?? '—'}</td>
+              <td className="px-4 py-3 text-gray-300">{formatNumeric(m.active_pricing?.credit_per_input_1k, 4)}</td>
+              <td className="px-4 py-3 text-gray-300">{formatNumeric(m.active_pricing?.credit_per_output_1k, 4)}</td>
               <td className="px-4 py-3 text-gray-400 text-xs">{formatDate(m.active_pricing?.effective_from)}</td>
               <td className="px-4 py-3">
                 <Link to={`/admin/pricing/${m.id}/edit`} className="text-xs text-purple-400 hover:text-purple-300">

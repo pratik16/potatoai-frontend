@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useGetAdminUserQuery, useAdjustCreditsMutation, useSuspendUserMutation } from '../adminApi';
-import { PageHeader, PlanBadge, formatDate } from '../components/AdminShared';
+import { PageHeader, PlanBadge, formatDate, formatCount, formatNumeric, num } from '../components/AdminShared';
 
 export default function AdminUserDetailPage() {
   const { id }              = useParams<{ id: string }>();
@@ -63,7 +63,9 @@ export default function AdminUserDetailPage() {
               </span>
             } />
             <Row label="Joined"  value={formatDate(user.created_at)} />
-            <Row label="Balance" value={`${(user.credit_balance ?? 0).toFixed(2)} credits`} />
+            <Row label="Balance" value={`${num(user.credit_balance).toFixed(2)} credits`} />
+            <Row label="Messages (mo)"     value={formatCount(user.messages_this_month)} />
+            <Row label="Credits used (mo)" value={formatNumeric(user.credits_used_this_month)} />
           </dl>
 
           <button

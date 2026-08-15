@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useGetAdminUsersQuery } from '../adminApi';
-import { PageHeader, AdminTable, Skeleton, Pagination, PlanBadge, formatDate } from '../components/AdminShared';
+import { PageHeader, AdminTable, Skeleton, Pagination, PlanBadge, formatDate, formatCount, formatNumeric, num } from '../components/AdminShared';
 import type { UserListParams } from '../../../types/admin.types';
 
 export default function AdminUsersPage() {
@@ -50,9 +50,9 @@ export default function AdminUsersPage() {
                 <div className="text-xs text-gray-500">{user.email}</div>
               </td>
               <td className="px-4 py-3"><PlanBadge plan={user.plan} /></td>
-              <td className="px-4 py-3 text-gray-300">{(user.credit_balance ?? 0).toFixed(2)}</td>
-              <td className="px-4 py-3 text-gray-400">{user.messages_this_month ?? '—'}</td>
-              <td className="px-4 py-3 text-gray-400">{user.credits_used_this_month?.toFixed(2) ?? '—'}</td>
+              <td className="px-4 py-3 text-gray-300">{num(user.credit_balance).toFixed(2)}</td>
+              <td className="px-4 py-3 text-gray-400">{formatCount(user.messages_this_month)}</td>
+              <td className="px-4 py-3 text-gray-400">{formatNumeric(user.credits_used_this_month)}</td>
               <td className="px-4 py-3">
                 <span className={user.is_suspended ? 'text-red-400' : 'text-green-400'}>
                   {user.is_suspended ? 'Suspended' : 'Active'}
