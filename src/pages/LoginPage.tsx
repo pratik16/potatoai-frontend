@@ -9,6 +9,7 @@ import { Input } from '../components/ui/Input';
 import { SocialAuthButtons } from '../components/auth/SocialAuthButtons';
 import { BrandLogo } from '../components/BrandLogo';
 import { MODELS } from '../utils/modelConfig';
+import { apiErrorMessage, apiFieldErrors, asApiError } from '../utils/apiError';
 
 export default function LoginPage() {
   const dispatch    = useAppDispatch();
@@ -19,6 +20,7 @@ export default function LoginPage() {
 
   const [form, setForm]   = useState({ email: '', password: '', remember_me: false });
   const [error, setError] = useState(sessionExpired ? 'Your session has expired. Please log in again.' : '');
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (sessionExpired) {
@@ -29,13 +31,14 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setFieldErrors({});
     try {
       const result = await login(form).unwrap();
       dispatch(setCredentials(result));
       navigate('/chat/new');
     } catch (err: unknown) {
-      const anyErr = err as { status?: number; data?: { code?: string; message?: string; detail?: string } };
-      const message = anyErr.data?.message ?? anyErr.data?.detail ?? 'Login failed';
+      const anyErr  = asApiError(err);
+      const message = apiErrorMessage(err, 'Login failed');
 
       const looksLikeUnverified =
         anyErr.status === 403 && anyErr.data?.code === 'EMAIL_NOT_VERIFIED';
@@ -50,6 +53,9 @@ export default function LoginPage() {
         return;
       }
 
+      // 422 now carries a per-field map; anything else leaves it empty and only
+      // the flat line below renders.
+      setFieldErrors(apiFieldErrors(err));
       setError(message);
     }
   };
@@ -83,6 +89,7 @@ export default function LoginPage() {
               value={form.email}
               onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
               leftIcon={<Mail className="h-4 w-4" />}
+              error={fieldErrors.email}
               required
             />
             <div>
@@ -97,6 +104,7 @@ export default function LoginPage() {
                 value={form.password}
                 onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
                 leftIcon={<Lock className="h-4 w-4" />}
+                error={fieldErrors.password}
                 required
               />
             </div>

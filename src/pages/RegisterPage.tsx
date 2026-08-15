@@ -8,6 +8,7 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { SocialAuthButtons } from '../components/auth/SocialAuthButtons';
 import { BrandLogo } from '../components/BrandLogo';
+import { apiErrorMessage, apiFieldErrors } from '../utils/apiError';
 
 export default function RegisterPage() {
   const dispatch  = useAppDispatch();
@@ -16,12 +17,14 @@ export default function RegisterPage() {
 
   const [form, setForm]   = useState({ name: '', email: '', password: '', password_confirmation: '' });
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setFieldErrors({});
     if (form.password !== form.password_confirmation) {
-      setError('Passwords do not match');
+      setFieldErrors({ password_confirmation: 'Passwords do not match' });
       return;
     }
     try {
@@ -29,9 +32,15 @@ export default function RegisterPage() {
       dispatch(setCredentials(result));
       navigate('/chat/new');
     } catch (err: unknown) {
-      const e = err as { data?: { message?: string; errors?: Record<string, string[]> } };
-      const firstError = e.data?.errors ? Object.values(e.data.errors)[0]?.[0] : undefined;
-      setError(firstError ?? e.data?.message ?? 'Registration failed');
+      // Before the API returned 422s these arrived as a bare 500, so the map was
+      // always empty and every field error collapsed into one generic line.
+      const fields = apiFieldErrors(err);
+      setFieldErrors(fields);
+      setError(
+        Object.keys(fields).length > 0
+          ? ''
+          : apiErrorMessage(err, 'Registration failed'),
+      );
     }
   };
 
@@ -63,6 +72,7 @@ export default function RegisterPage() {
               value={form.name}
               onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
               leftIcon={<User className="h-4 w-4" />}
+              error={fieldErrors.name}
               required
             />
             <Input
@@ -73,6 +83,7 @@ export default function RegisterPage() {
               value={form.email}
               onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
               leftIcon={<Mail className="h-4 w-4" />}
+              error={fieldErrors.email}
               required
             />
             <Input
@@ -83,6 +94,7 @@ export default function RegisterPage() {
               value={form.password}
               onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
               leftIcon={<Lock className="h-4 w-4" />}
+              error={fieldErrors.password}
               required
             />
             <Input
@@ -93,6 +105,7 @@ export default function RegisterPage() {
               value={form.password_confirmation}
               onChange={(e) => setForm((f) => ({ ...f, password_confirmation: e.target.value }))}
               leftIcon={<Lock className="h-4 w-4" />}
+              error={fieldErrors.password_confirmation}
               required
             />
 
