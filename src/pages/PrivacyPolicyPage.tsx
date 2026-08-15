@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { useTheme } from '../hooks/useTheme';
 import { BrandLogo } from '../components/BrandLogo';
 
-const LAST_UPDATED = 'July 20, 2026';
+const LAST_UPDATED = 'August 15, 2026';
 const SUPPORT_EMAIL = 'support@potatoaihub.com';
 const SITE_URL = 'https://potatoaihub.com';
 
@@ -102,10 +102,43 @@ export default function PrivacyPolicyPage() {
             <li>Support messages you send to us</li>
           </ul>
 
+          <h3>2.6 Mobile app analytics and diagnostics</h3>
+          <p>
+            The PotatoChat Android app uses Google Firebase (Google Analytics for Firebase and
+            Firebase Crashlytics) to understand how the app is used and to diagnose crashes.
+            This collects:
+          </p>
+          <ul>
+            <li>
+              App events such as app opens, which screens you view and for how long, sign-in
+              method, chats created, messages sent, attachments added, and errors encountered
+            </li>
+            <li>
+              A randomly generated app instance identifier, plus device model, operating system
+              version, app version, language, and approximate country derived from IP address
+            </li>
+            <li>
+              Crash reports, including stack traces and app state at the time of the crash
+            </li>
+          </ul>
+          <p>
+            <strong>
+              We do not send message content, chat titles, attachment file names, email
+              addresses, or authentication tokens to these services.
+            </strong>{' '}
+            Error reports carry a short machine-readable error code rather than your content.
+            We use this information to measure engagement and improve the app, not to build
+            advertising profiles.
+          </p>
+
           <h2>3. How we use information</h2>
           <p>We use the information above to:</p>
           <ul>
             <li>Provide, operate, and improve the Service (including streaming chat responses)</li>
+            <li>
+              Measure how our apps are used — feature usage, screens viewed, and reliability —
+              so we can improve them
+            </li>
             <li>Authenticate you, secure accounts, and prevent abuse or fraud</li>
             <li>Process credits, subscriptions, and payments</li>
             <li>Send transactional emails (verification, password reset, billing notices)</li>
@@ -130,6 +163,11 @@ export default function PrivacyPolicyPage() {
               <strong>Stripe</strong> — payment processing and billing.
             </li>
             <li>
+              <strong>Google Firebase</strong> — Google Analytics for Firebase and Firebase
+              Crashlytics provide app analytics and crash diagnostics for the PotatoChat mobile
+              app, as described in section 2.6.
+            </li>
+            <li>
               <strong>Google / GitHub</strong> — if you use social sign-in.
             </li>
             <li>
@@ -150,7 +188,8 @@ export default function PrivacyPolicyPage() {
           <p>
             The web app uses local browser storage (and similar mechanisms in mobile WebViews) to
             keep you signed in and remember preferences. We do not use third-party advertising
-            cookies to track you across unrelated sites for ads.
+            cookies to track you across unrelated sites for ads, and our mobile app does not
+            collect the Android advertising identifier.
           </p>
 
           <h2>6. Data retention</h2>
@@ -189,6 +228,12 @@ export default function PrivacyPolicyPage() {
             {' '}or contact{' '}
             <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>. We may need to verify your
             identity before fulfilling a request.
+          </p>
+          <p>
+            The PotatoChat mobile app does not currently offer an in-app analytics opt-out. Your
+            device&rsquo;s Google settings let you opt out of ads personalisation, which limits
+            how this data may be used for advertising; uninstalling the app stops collection
+            entirely. You can also contact us at the address below.
           </p>
 
           <h2>9. Children</h2>
