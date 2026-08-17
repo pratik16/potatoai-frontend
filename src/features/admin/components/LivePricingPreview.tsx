@@ -69,6 +69,48 @@ export function LivePricingPreview({
   );
 }
 
+/**
+ * Image models skip the token maths entirely — the admin types the credit price
+ * per image directly, so there is no provider price or margin to derive from.
+ * What is NOT obvious at the point of typing is what that number means to a
+ * user's monthly allowance, which is exactly what got a text model's pricing
+ * wrong before; show the same allowance translation for images.
+ */
+export function ImagePricingPreview({
+  creditPerImage, config,
+}: {
+  creditPerImage: number;
+  config:         CreditsConfig;
+}) {
+  const perImage   = num(creditPerImage);
+  const usdPerCred = num(config.usd_per_credit);
+  const free       = num(config.free_plan_monthly_credits);
+  const pro        = num(config.pro_plan_monthly_credits);
+
+  const images = (budget: number) => (perImage > 0 ? Math.floor(budget / perImage) : Infinity);
+  const fmt    = (n: number) => (isFinite(n) ? n.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '∞');
+
+  return (
+    <div className="rounded-lg border border-gray-700 bg-gray-900 p-5 font-mono text-sm">
+      <p className="mb-4 text-xs font-bold uppercase tracking-widest text-gray-400">Live Calculation Preview</p>
+
+      <Row label="USD per credit" value={`$${usdPerCred}`} />
+      <Row label="Credits / image" value={`${perImage.toFixed(4)} credits`} color="text-blue-400" />
+      <Row label="Charged per image" value={`≈ $${(perImage * usdPerCred).toFixed(4)}`} />
+
+      <Divider label="Monthly allowance" />
+      <Row label={`Free (${free} credits)`} value={`≈ ${fmt(images(free))} images`} />
+      <Row label={`Pro (${pro} credits)`}   value={`≈ ${fmt(images(pro))} images`} />
+
+      {perImage <= 0 && (
+        <p className="mt-4 text-xs text-amber-400">
+          A price of 0 makes every image free and unlimited — set it before creating the model.
+        </p>
+      )}
+    </div>
+  );
+}
+
 function Row({ label, value, color = 'text-white' }: { label: string; value: string; color?: string }) {
   return (
     <div className="flex justify-between py-0.5">

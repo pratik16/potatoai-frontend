@@ -2,12 +2,14 @@ import { useState, useMemo, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useGetAdminModelsQuery, useSavePricingMutation, useGetCreditsConfigQuery } from '../adminApi';
 import { PageHeader, num } from '../components/AdminShared';
-import { LivePricingPreview } from '../components/LivePricingPreview';
+import { LivePricingPreview, ImagePricingPreview } from '../components/LivePricingPreview';
+import type { NewPricingData } from '../../../types/admin.types';
 
 export default function AdminPricingEditPage() {
   const { id }       = useParams<{ id: string }>();
   const navigate     = useNavigate();
-  const { data: models, isLoading: modelsLoading } = useGetAdminModelsQuery();
+  // `{}` = live models only. A model being priced here is never an archived one.
+  const { data: models, isLoading: modelsLoading } = useGetAdminModelsQuery({});
   const { data: config, isLoading: configLoading } = useGetCreditsConfigQuery();
   const [save, { isLoading }] = useSavePricingMutation();
   const model = models?.find((m) => m.id === Number(id));
@@ -16,10 +18,20 @@ export default function AdminPricingEditPage() {
     provider_input_price_per_1m:  0,
     provider_output_price_per_1m: 0,
     margin_percent:               30,
+    credit_per_image:             0,
     effective_from:               new Date().toISOString().slice(0, 16),
     notes:                        '',
   });
   const [error, setError] = useState('');
+
+  /**
+   * Which rating scheme this model uses. Read from the model's `type` when the
+   * API supplies it, and fall back to the shape of the existing pricing row —
+   * that keeps the page correct against an API that predates the text/image
+   * split, and it matters here more than anywhere: posting the token form for
+   * an image model would append a row that prices images at nothing.
+   */
+  const isImage = model?.type === 'image' || model?.active_pricing?.credit_per_image != null;
 
   // On a direct load of /admin/pricing/:id/edit the models query is still in
   // flight during first render, so seeding useState alone left the form on
@@ -30,24 +42,55 @@ export default function AdminPricingEditPage() {
     if (!activePricing) return;
     setForm((prev) => ({
       ...prev,
+      // Whichever half is NULL on the row seeds as 0 and is never submitted for
+      // that kind of model, so a null token rate cannot leak into an image row.
       provider_input_price_per_1m:  num(activePricing.provider_input_price_per_1m),
       provider_output_price_per_1m: num(activePricing.provider_output_price_per_1m),
       margin_percent:               num(activePricing.margin_percent),
+      credit_per_image:             num(activePricing.credit_per_image),
     }));
   }, [activePricing]);
 
   const previewForm = useMemo(() => ({ ...form }), [form]);
 
+  // A pricing row rates tokens or images, never both — send the unused side as
+  // an explicit null so the appended row can only be one of the two valid shapes.
+  const payload = (): NewPricingData => {
+    const shared = { effective_from: new Date(form.effective_from).toISOString(), notes: form.notes };
+    return isImage
+      ? {
+        ...shared,
+        provider_input_price_per_1m:  null,
+        provider_output_price_per_1m: null,
+        margin_percent:               null,
+        credit_per_image:             form.credit_per_image,
+      }
+      : {
+        ...shared,
+        provider_input_price_per_1m:  form.provider_input_price_per_1m,
+        provider_output_price_per_1m: form.provider_output_price_per_1m,
+        margin_percent:               form.margin_percent,
+        credit_per_image:             null,
+      };
+  };
+
   const handleSave = async () => {
     setError('');
-    // Mirrors the server-side rule (AdminPricingController: margin max:99);
-    // at 100 the margin multiplier is infinite.
-    if (form.margin_percent < 0 || form.margin_percent > 99) {
+    if (isImage) {
+      // 0 would append a row that makes every image free — and this table is
+      // append-only, so it cannot be taken back, only superseded.
+      if (!(form.credit_per_image > 0)) {
+        setError('Credits per image must be greater than 0.');
+        return;
+      }
+    } else if (form.margin_percent < 0 || form.margin_percent > 99) {
+      // Mirrors the server-side rule (AdminPricingController: margin max:99);
+      // at 100 the margin multiplier is infinite.
       setError('Margin must be between 0 and 99%.');
       return;
     }
     try {
-      await save({ modelId: Number(id), data: { ...form, effective_from: new Date(form.effective_from).toISOString() } }).unwrap();
+      await save({ modelId: Number(id), data: payload() }).unwrap();
       navigate('/admin/pricing');
     } catch {
       setError('Failed to save pricing. Check the values and try again.');
@@ -84,9 +127,21 @@ export default function AdminPricingEditPage() {
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
         <div>
-          {field('Provider Input Price ($/1M tokens)', 'provider_input_price_per_1m')}
-          {field('Provider Output Price ($/1M tokens)', 'provider_output_price_per_1m')}
-          {field('Margin %', 'margin_percent', 'number', '0.01')}
+          {isImage ? (
+            <>
+              {field('Credits per Image', 'credit_per_image', 'number', '0.0001')}
+              <p className="mb-4 -mt-2 text-xs text-gray-600">
+                This model is rated per image, so it has no provider token price or margin — those
+                columns stay empty on the new row.
+              </p>
+            </>
+          ) : (
+            <>
+              {field('Provider Input Price ($/1M tokens)', 'provider_input_price_per_1m')}
+              {field('Provider Output Price ($/1M tokens)', 'provider_output_price_per_1m')}
+              {field('Margin %', 'margin_percent', 'number', '0.01')}
+            </>
+          )}
           {field('Effective From', 'effective_from', 'datetime-local', '')}
 
           <div className="mb-4">
@@ -113,7 +168,9 @@ export default function AdminPricingEditPage() {
           </p>
         </div>
 
-        <LivePricingPreview form={previewForm} config={config} />
+        {isImage
+          ? <ImagePricingPreview creditPerImage={previewForm.credit_per_image} config={config} />
+          : <LivePricingPreview form={previewForm} config={config} />}
       </div>
     </div>
   );

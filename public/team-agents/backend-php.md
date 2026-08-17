@@ -67,7 +67,7 @@ Cross-links: `users.mongo_user_id` ↔ Mongo `user_id`; `message_token_usage.mes
 - **One source of truth** — Config (`frontend_url`, env) in one place; no scattered `:4200` / `:5173` / `:3000` literals in controllers.
 - **Production mindset** — Queues, config cache, rate limits, enumeration-safe messages; call out restart/migrate steps when env changes.
 
-Your mission: keep **potatoaihub.com** running correctly by mastering **`backend/`**, how **`react/`** consumes it, and how **`docker/`** deploys the stack.
+Your mission: keep **potatoaihub.com** running correctly by mastering **`backend/`**, how **`web/`** consumes it, and how **`docker/`** deploys the stack.
 
 ---
 
@@ -76,7 +76,7 @@ Your mission: keep **potatoaihub.com** running correctly by mastering **`backend
 | Path | Role |
 |------|------|
 | `backend/` | **Laravel 12 API** — source of truth for business logic |
-| `react/` | **React 18 + Vite + RTK Query** — calls `/api/*` |
+| `web/` | **React 18 + Vite + RTK Query** — calls `/api/*` |
 | `docker/` | **Compose, Nginx, Caddy, PHP-FPM** — local dev + production |
 | `frontend-dist/` | Built React static files (prod Nginx root; artifact on EC2) |
 | `frontend/` | **Legacy Angular 19** — not used by current Docker/Caddy stack |
@@ -99,7 +99,7 @@ Configs: `docker/Caddyfile`, `docker/nginx/frontend.prod.conf`, `docker/nginx/ba
 
 **Local dev:**
 
-- Vite: `react/` on port **3000**, proxies `/api` → `http://localhost:8000`
+- Vite: `web/` on port **3000**, proxies `/api` → `http://localhost:8000`
 - Docker: frontend **:3000**, Laravel nginx **:8000** (`docker/docker-compose.yml`)
 
 ---
@@ -206,7 +206,7 @@ See also: `.cursor/rules/backend-api-error-codes.mdc`.
 - Response: `{ token, access_token, user }` via `buildPhase3Response()`
 - Unverified login: **403** + `code: EMAIL_NOT_VERIFIED`
 
-**React** (`react/src/features/auth/`):
+**React** (`web/src/features/auth/`):
 
 - Token + user in **`localStorage`** key `auth` (`authSlice.ts`)
 - RTK `fetchBaseQuery` sends `Authorization: Bearer <token>` (`utils/baseQuery.ts`)
@@ -289,7 +289,7 @@ PHPUnit is in `composer.json` but **`tests/` is empty**. When adding tests, use 
 
 ---
 
-## React integration (`react/`)
+## React integration (`web/`)
 
 Know enough to **review contracts**, not rebuild UI.
 
@@ -333,7 +333,7 @@ Know enough to **review contracts**, not rebuild UI.
 
 | Repo | Branch | Action |
 |------|--------|--------|
-| `react/.github/workflows/deploy-production.yml` | `main` | Build → `~/potatoaihub/frontend-dist` → recreate `frontend`, `edge` |
+| `web/.github/workflows/deploy-production.yml` | `main` | Build → `~/potatoaihub/frontend-dist` → recreate `frontend`, `edge` |
 | `backend/.github/workflows/deploy-production.yml` | `master` | Archive → `~/potatoaihub/backend` → rebuild `app`, workers, migrate |
 
 After backend deploy on EC2: `php artisan migrate --force`, `config:cache`, `optimize:clear`.
@@ -363,7 +363,7 @@ In Docker: `docker compose exec app php artisan …` from `docker/` directory.
 4. **Legacy routes** — do not remove FastAPI-compatible paths without checking React and any external clients.
 5. **Security** — never log tokens/passwords; validate uploads in `FileUploadService`; admin routes stay IP-restricted.
 6. **Performance** — queue long AI/media work; keep SSE unbuffered; use eager loading on PG queries.
-7. **Scope** — change `backend/` first; only touch `react/` when the API contract changes; touch `docker/` when ports/proxy/timeouts change.
+7. **Scope** — change `backend/` first; only touch `web/` when the API contract changes; touch `docker/` when ports/proxy/timeouts change.
 
 ---
 

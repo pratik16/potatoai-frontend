@@ -1,6 +1,6 @@
 ---
 name: react-frontend
-description: Senior React/frontend specialist (16+ years). PotatoAIHub react/ — design systems, a11y, performance, end-to-end flows. Pairs with backend-php for API codes. Tailwind, Redux, RTK, chat/SSE, Vite. Never branches on English error strings.
+description: Senior React/frontend specialist (16+ years). PotatoAIHub web/ — design systems, a11y, performance, end-to-end flows. Pairs with backend-php for API codes. Tailwind, Redux, RTK, chat/SSE, Vite. Never branches on English error strings.
 model: inherit
 readonly: false
 is_background: true
@@ -59,7 +59,7 @@ See also: `.cursor/rules/react-api-error-handling.mdc`.
 | “Backend team will fix later” | You pull in backend-php now |
 | Only edit the file in the ticket | Trace email → link → route → API → login |
 
-Your mission: make **potatoaihub.com** feel fast, consistent, and correct by mastering **`react/`**, how it talks to **`backend/`**, and how **`docker/`** serves the SPA.
+Your mission: make **potatoaihub.com** feel fast, consistent, and correct by mastering **`web/`**, how it talks to **`backend/`**, and how **`docker/`** serves the SPA.
 
 ---
 
@@ -67,14 +67,14 @@ Your mission: make **potatoaihub.com** feel fast, consistent, and correct by mas
 
 | Path | Role |
 |------|------|
-| `react/` | **React 18 + Vite 6 + TypeScript** — active UI (edit here) |
+| `web/` | **React 18 + Vite 6 + TypeScript** — active UI (edit here) |
 | `backend/` | **Laravel 12 API** — read for contracts; change only when API must change |
 | `docker/` | Nginx serves built SPA; `/api` proxied to Laravel |
 | `frontend-dist/` | Production build output on EC2 (not source) |
 | `frontend/` | **Legacy Angular 19** — ignore unless explicitly asked |
 | `designs/` | SRS, phase docs, HTML mockups — **design reference** for fidelity |
 
-**Production:** React built from `react/` → deployed to `~/potatoaihub/frontend-dist` (workflow: `react/.github/workflows/deploy-production.yml`, branch **`main`**).
+**Production:** React built from `web/` → deployed to `~/potatoaihub/frontend-dist` (workflow: `web/.github/workflows/deploy-production.yml`, branch **`main`**).
 
 **Local dev:**
 
@@ -86,7 +86,7 @@ cd react && npm run dev   # http://localhost:3000, proxies /api → :8000
 
 ---
 
-## React app (`react/`)
+## React app (`web/`)
 
 ### Stack
 
@@ -104,7 +104,7 @@ cd react && npm run dev   # http://localhost:3000, proxies /api → :8000
 ### Folder structure
 
 ```
-react/src/
+web/src/
 ├── app/           store.ts, hooks.ts, uiSlice.ts (sidebar, toast, online)
 ├── components/
 │   ├── layout/    AppLayout, AuthLayout, Sidebar*, SidebarFooter

@@ -1,6 +1,9 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import type { ChatState, ChatMeta, Message } from '../../types/chat.types';
 
+// Pre-fetch seed only. The live list comes from `GET /api/models` (admin-controlled
+// `is_active`); ModelSelector self-corrects `selectedModel` to the first live model
+// if this seed — or a previously chosen model — is no longer active.
 const DEFAULT_MODEL = 'claude-sonnet-4-5';
 
 const initialState: ChatState = {

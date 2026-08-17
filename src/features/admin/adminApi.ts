@@ -1,6 +1,7 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import type {
-  DashboardData, AdminModel, PricingRow, NewPricingData, PricingHistoryResponse,
+  DashboardData, AdminModel, AdminModelsParams, NewModelData, ModelRemovalResult,
+  PricingRow, NewPricingData, PricingHistoryResponse,
   CreditsConfig, IpListResponse, IpEntry,
   AuditLogResponse, AuditLogParams,
   UsersResponse, UserListParams, AdminUser,
@@ -29,14 +30,34 @@ export const adminApi = createApi({
       keepUnusedDataFor:  60,
     }),
 
-    getAdminModels: builder.query<AdminModel[], void>({
-      query:             () => '/models',
+    getAdminModels: builder.query<AdminModel[], AdminModelsParams>({
+      // `with_removed` is only sent when asked for: it widens the result set to
+      // include archived rows, so it must never leak into the default listing.
+      query:             ({ with_removed }) => ({
+        url:    '/models',
+        params: with_removed ? { with_removed: 1 } : undefined,
+      }),
       transformResponse: (r: { data: AdminModel[] }) => r.data,
       providesTags:      ['Models'],
+    }),
+    createModel: builder.mutation<AdminModel, NewModelData>({
+      query:            (data) => ({ url: '/models', method: 'POST', body: data }),
+      transformResponse: (r: { data: AdminModel }) => r.data,
+      invalidatesTags:  ['Models', 'Pricing'],
     }),
     toggleModel: builder.mutation<AdminModel, { id: number; patch: Partial<AdminModel> }>({
       query:            ({ id, patch }) => ({ url: `/models/${id}`, method: 'PATCH', body: patch }),
       transformResponse: (r: { data: AdminModel }) => r.data,
+      invalidatesTags:  ['Models', 'Pricing'],
+    }),
+    // Resolves to either a hard delete or a forced deactivate + archive; the
+    // caller branches on `action` to tell the admin which one happened.
+    deleteModel: builder.mutation<ModelRemovalResult, number>({
+      query:            (id) => ({ url: `/models/${id}`, method: 'DELETE' }),
+      // Tolerates both the enveloped `{ data: {...} }` shape the other admin
+      // endpoints use and a bare `{ action, message }` body.
+      transformResponse: (r: ModelRemovalResult | { data: ModelRemovalResult }) =>
+        ('data' in r ? r.data : r),
       invalidatesTags:  ['Models', 'Pricing'],
     }),
 
@@ -124,7 +145,9 @@ export const adminApi = createApi({
 export const {
   useGetDashboardQuery,
   useGetAdminModelsQuery,
+  useCreateModelMutation,
   useToggleModelMutation,
+  useDeleteModelMutation,
   useGetAdminPricingQuery,
   useSavePricingMutation,
   useGetPricingHistoryQuery,

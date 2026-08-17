@@ -48,6 +48,9 @@ const STREAM_ERRORS: Record<string, string> = {
   INSUFFICIENT_CREDITS:  "You're out of credits. Upgrade to continue.",
   CONTEXT_TOO_LONG:      'This chat is near the context limit. Start a new chat.',
   PROVIDER_ERROR:        'AI provider error. Please try again.',
+  MODEL_DISABLED:        'This model has been turned off. Pick another model to continue.',
+  MODEL_NOT_FOUND:       'That model is no longer available. Pick another model to continue.',
+  MODEL_PRICING_MISSING: 'This model is temporarily unavailable. Pick another model or try again later.',
 };
 
 export function useChat() {

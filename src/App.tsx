@@ -29,6 +29,7 @@ const TeamAgentsPage = isLocalDev ? lazy(() => import('./pages/TeamAgentsPage'))
 
 const AdminDashboardPage     = lazy(() => import('./features/admin/pages/AdminDashboardPage'));
 const AdminModelsPage        = lazy(() => import('./features/admin/pages/AdminModelsPage'));
+const AdminModelFormPage     = lazy(() => import('./features/admin/pages/AdminModelFormPage'));
 const AdminPricingPage       = lazy(() => import('./features/admin/pages/AdminPricingPage'));
 const AdminPricingEditPage   = lazy(() => import('./features/admin/pages/AdminPricingEditPage'));
 const AdminPricingHistoryPage = lazy(() => import('./features/admin/pages/AdminPricingHistoryPage'));
@@ -101,6 +102,7 @@ export default function App() {
           <Route element={<AdminLayout />}>
             <Route index                          element={<AdminDashboardPage />} />
             <Route path="models"                  element={<AdminModelsPage />} />
+            <Route path="models/new"              element={<AdminModelFormPage />} />
             <Route path="pricing"                 element={<AdminPricingPage />} />
             <Route path="pricing/:id/edit"        element={<AdminPricingEditPage />} />
             <Route path="pricing/:id/history"     element={<AdminPricingHistoryPage />} />

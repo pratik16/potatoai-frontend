@@ -224,6 +224,27 @@ export function formatNumeric(v: number | string | null | undefined, digits = 2)
   return num(v).toFixed(digits);
 }
 
+const isBlank = (v: unknown): boolean => v === null || v === undefined || v === '';
+
+/**
+ * One cost cell that covers both kinds of model: `credits/1K in – out` for a
+ * token-rated row, `credits/image` for an image-rated one.
+ *
+ * It reads the pricing row rather than the model's `type` on purpose — the row
+ * itself is what says which rating applies, so this stays correct for a model
+ * whose `type` is missing (older API) or being changed.
+ */
+export function formatPricingCost(p?: {
+  credit_per_input_1k?:  number | string | null;
+  credit_per_output_1k?: number | string | null;
+  credit_per_image?:     number | string | null;
+} | null): string {
+  if (!p) return '—';
+  if (!isBlank(p.credit_per_image)) return `${formatNumeric(p.credit_per_image, 4)} / image`;
+  if (isBlank(p.credit_per_input_1k) && isBlank(p.credit_per_output_1k)) return '—';
+  return `${formatNumeric(p.credit_per_input_1k, 4)} – ${formatNumeric(p.credit_per_output_1k, 4)} / 1K`;
+}
+
 /** Thousands-grouped integer, tolerant of numeric strings. */
 export function formatCount(v: number | string | null | undefined): string {
   if (v === null || v === undefined || v === '') return '—';

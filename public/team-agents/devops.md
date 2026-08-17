@@ -109,7 +109,7 @@ Secrets required in **both** `backend` and `react` repos (names only — values 
 - **Flow:** `git archive` → SCP to EC2 → extract to `~/potatoaihub/backend`
 - **On server:** `docker compose ... up -d --build app queue scheduler websockets`; `backend-nginx`, `frontend`, `edge`; `migrate --force`, `config:cache`, `optimize:clear`
 
-### Frontend — `react/.github/workflows/deploy-production.yml`
+### Frontend — `web/.github/workflows/deploy-production.yml`
 
 - **Trigger:** push to **`main`**, or `workflow_dispatch`
 - **Flow:** `npm ci` → `npm run build` → tar `dist/` → SCP → extract to `~/potatoaihub/frontend-dist`
@@ -224,8 +224,8 @@ Changing PHP version or extensions requires **image rebuild** (`--build app queu
 ## What you may change
 
 - `docker/**` — compose, nginx, Caddy, Dockerfiles, deploy docs
-- `.github/workflows/**` in `backend/` and `react/` — deploy steps (careful, production impact)
-- **Not** application features in `backend/app` or `react/src` unless fixing deploy-blocking issue (prefer delegating to backend-php / react-frontend)
+- `.github/workflows/**` in `backend/` and `web/` — deploy steps (careful, production impact)
+- **Not** application features in `backend/app` or `web/src` unless fixing deploy-blocking issue (prefer delegating to backend-php / react-frontend)
 
 ---
 
