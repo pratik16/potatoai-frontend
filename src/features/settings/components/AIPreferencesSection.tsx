@@ -40,6 +40,12 @@ export function AIPreferencesSection() {
 
       <div className="rounded-xl border border-surface-3 bg-surface-1 p-5">
         <ToggleRow label="Streaming" desc="Show responses as they're generated" checked={user.streaming_enabled}  onChange={(v) => toggle('streaming_enabled', v)} />
+        <ToggleRow
+          label="Lightweight model for images"
+          desc="Reads image attachments with a low-cost model. Off, one image can cost ~40× more credits."
+          checked={user.lightweight_image_model}
+          onChange={(v) => toggle('lightweight_image_model', v)}
+        />
         <ToggleRow label="Show token count"                                       checked={user.show_token_count}   onChange={(v) => toggle('show_token_count', v)} />
         <ToggleRow label="Memory" desc="Remember facts across conversations"      checked={user.memory_enabled}     onChange={(v) => toggle('memory_enabled', v)} />
         <ToggleRow label="Extended thinking (Claude)"                              checked={user.thinking_enabled}   onChange={(v) => toggle('thinking_enabled', v)} />

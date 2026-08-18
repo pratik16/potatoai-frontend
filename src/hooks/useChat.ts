@@ -14,6 +14,9 @@ import type { Message } from '../types/chat.types';
 
 const STREAM_TIMEOUT_MS = 30_000;
 
+const IMAGE_GAVE_UP = "The image didn't finish in time. Please try again.";
+const IMAGE_FAILED  = "Couldn't generate that image. Please try again.";
+
 export async function pollImageAsset(
   assetId: string,
   msgId: string,
@@ -21,18 +24,27 @@ export async function pollImageAsset(
   dispatch: AppDispatch,
   attempt = 0,
 ) {
-  if (attempt > 30) return; // give up after ~2 minutes
+  // Every exit from this function has to land on either an image or an error.
+  // Returning silently leaves "Generating image…" spinning forever, which is
+  // indistinguishable from a job that is merely slow.
+  if (attempt > 30) {
+    dispatch(updateMessageById({ id: msgId, update: { image_error: IMAGE_GAVE_UP } }));
+    return;
+  }
   await new Promise((r) => setTimeout(r, attempt === 0 ? 3000 : 4000));
   try {
     const res = await fetch(`/api/images/${assetId}/status`, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    if (!res.ok) return;
+    if (!res.ok) {
+      dispatch(updateMessageById({ id: msgId, update: { image_error: IMAGE_FAILED } }));
+      return;
+    }
     const data = await res.json();
     if (['done', 'SUCCEEDED', 'completed'].includes(data.status) && data.url) {
-      dispatch(updateMessageById({ id: msgId, update: { image_url: data.url } }));
+      dispatch(updateMessageById({ id: msgId, update: { image_url: data.url, image_error: null } }));
     } else if (['failed', 'FAILED', 'error'].includes(data.status)) {
-      return;
+      dispatch(updateMessageById({ id: msgId, update: { image_error: IMAGE_FAILED } }));
     } else {
       pollImageAsset(assetId, msgId, token, dispatch, attempt + 1);
     }

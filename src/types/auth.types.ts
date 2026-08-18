@@ -12,6 +12,7 @@ export interface User {
   font_size:           'small' | 'medium' | 'large';
   compact_mode:        boolean;
   default_model:       string | null;
+  lightweight_image_model: boolean;
   streaming_enabled:   boolean;
   show_token_count:    boolean;
   memory_enabled:      boolean;

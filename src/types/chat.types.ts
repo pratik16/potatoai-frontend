@@ -31,6 +31,9 @@ export interface Message {
   // image editing in chat
   image_asset_id?:  string | null;
   image_url?:       string | null;
+  // Client-side only: why the image never arrived. The spinner keys off
+  // image_asset_id && !image_url, so without this a failed job spins forever.
+  image_error?:     string | null;
 }
 
 export interface Attachment {

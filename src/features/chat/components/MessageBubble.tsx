@@ -78,7 +78,7 @@ export function MessageBubble({ message }: { message: Message }) {
         )}
 
         {/* Generated / edited image output */}
-        {!isUser && message.image_asset_id && !message.image_url && (
+        {!isUser && message.image_asset_id && !message.image_url && !message.image_error && (
           <div className="mt-3 flex items-center gap-2 text-xs text-gray-400">
             <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -86,6 +86,9 @@ export function MessageBubble({ message }: { message: Message }) {
             </svg>
             Generating image…
           </div>
+        )}
+        {!isUser && !message.image_url && message.image_error && (
+          <div className="mt-3 text-xs text-red-400">{message.image_error}</div>
         )}
         {!isUser && message.image_url && (
           <div className="mt-3">
