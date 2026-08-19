@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { Mail, Lock, User } from 'lucide-react';
 import { useRegisterMutation } from '../features/auth/authApi';
 import { setCredentials } from '../features/auth/authSlice';
@@ -46,6 +47,13 @@ export default function RegisterPage() {
 
   return (
     <div className="flex min-h-screen w-full">
+      <Helmet>
+        <title>Create your account — PotatoAIHub | PotatoChat</title>
+        <meta
+          name="description"
+          content="Create a free PotatoAIHub account to start chatting on PotatoChat — access Claude, GPT, Gemini and more AI models in one place."
+        />
+      </Helmet>
       <div className="flex w-full flex-col justify-center px-8 py-12 lg:w-1/2">
         <div className="mx-auto w-full max-w-sm">
           <div className="mb-8">

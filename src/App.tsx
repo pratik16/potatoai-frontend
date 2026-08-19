@@ -8,6 +8,7 @@ import { AdminLayout } from './features/admin/AdminLayout';
 import { Spinner } from './components/ui/Spinner';
 import { isLocalDev } from './utils/env';
 
+const LandingPage         = lazy(() => import('./pages/LandingPage'));
 const LoginPage           = lazy(() => import('./pages/LoginPage'));
 const RegisterPage        = lazy(() => import('./pages/RegisterPage'));
 const ForgotPasswordPage  = lazy(() => import('./pages/ForgotPasswordPage'));
@@ -45,6 +46,11 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
   return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
 }
 
+function PublicHome() {
+  const isAuthenticated = useAppSelector((s) => s.auth.isAuthenticated);
+  return isAuthenticated ? <Navigate to="/chat/new" replace /> : <LandingPage />;
+}
+
 function Loading() {
   return (
     <div className="flex h-screen items-center justify-center bg-surface-0">
@@ -57,6 +63,9 @@ export default function App() {
   return (
     <Suspense fallback={<Loading />}>
       <Routes>
+        {/* Public marketing home */}
+        <Route path="/" element={<PublicHome />} />
+
         {/* Public auth routes */}
         <Route element={<AuthLayout />}>
           <Route path="/login"           element={<LoginPage />} />
@@ -84,7 +93,6 @@ export default function App() {
             </RequireAuth>
           }
         >
-          <Route index element={<Navigate to="/chat/new" replace />} />
           <Route path="/chat/new"        element={<NewChatPage />} />
           <Route path="/chat/:chatId"    element={<ChatPage />} />
           <Route path="/projects"             element={<ProjectsPage />} />

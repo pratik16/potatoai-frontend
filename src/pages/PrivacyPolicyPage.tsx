@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { useTheme } from '../hooks/useTheme';
 import { BrandLogo } from '../components/BrandLogo';
 
@@ -11,6 +12,13 @@ export default function PrivacyPolicyPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-surface-0">
+      <Helmet>
+        <title>Privacy Policy — PotatoAIHub | PotatoChat</title>
+        <meta
+          name="description"
+          content="How PotatoAIHub collects, uses, and protects your data on PotatoChat, our AI chat service."
+        />
+      </Helmet>
       <header className="sticky top-0 z-10 border-b border-surface-3 bg-surface-1 px-6 py-3">
         <div className="mx-auto flex max-w-3xl items-center justify-between">
           <Link to="/login" className="flex items-center gap-2">

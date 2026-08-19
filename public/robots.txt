@@ -1,0 +1,16 @@
+User-agent: *
+Allow: /
+Allow: /privacy
+Disallow: /chat/
+Disallow: /projects/
+Disallow: /settings
+Disallow: /usage
+Disallow: /admin
+Disallow: /oauth/
+Disallow: /shared/
+Disallow: /delete-account
+Disallow: /reset-password
+Disallow: /verify
+Disallow: /verify-email
+
+Sitemap: https://www.potatoaihub.com/sitemap.xml

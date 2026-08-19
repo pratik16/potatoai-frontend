@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { Mail, Lock } from 'lucide-react';
 import { useLoginMutation } from '../features/auth/authApi';
 import { setCredentials } from '../features/auth/authSlice';
@@ -62,6 +63,13 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen w-full">
+      <Helmet>
+        <title>Sign in — PotatoAIHub | PotatoChat</title>
+        <meta
+          name="description"
+          content="Sign in to PotatoAIHub to continue your AI chat conversations on PotatoChat — Claude, GPT, Gemini and more, all in one place."
+        />
+      </Helmet>
       {/* Form panel */}
       <div className="flex w-full flex-col justify-center px-8 py-12 lg:w-1/2">
         <div className="mx-auto w-full max-w-sm">
