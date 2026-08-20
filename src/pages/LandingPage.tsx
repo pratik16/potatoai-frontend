@@ -13,6 +13,29 @@ const FEATURES: [string, string][] = [
   ['Private & secure', 'Your chats are never used for training. Encrypted at rest.'],
 ];
 
+const FAQS: [string, string][] = [
+  [
+    'What is PotatoAIHub?',
+    'PotatoAIHub is an all-in-one AI chat app — the home of PotatoChat. It lets you chat with Claude, GPT, Gemini and more AI models from a single account, instead of juggling separate logins and tabs for each provider.',
+  ],
+  [
+    'Which AI models can I use on PotatoChat?',
+    'PotatoChat currently supports Claude, GPT, Gemini, Qwen and MiniMax. You can switch between models mid-conversation without losing your context or chat history.',
+  ],
+  [
+    'Is PotatoAIHub a ChatGPT alternative?',
+    'Yes. PotatoAIHub is a multi-model ChatGPT alternative — instead of being limited to one AI provider, you get access to several leading models in one chat workspace.',
+  ],
+  [
+    'Can I generate images with PotatoAIHub?',
+    'Yes. PotatoChat supports AI image generation directly inside the chat, using the same account and history as your text conversations.',
+  ],
+  [
+    'Does PotatoAIHub organize my chat history?',
+    'Yes. You can group conversations into projects and search your entire chat history instantly.',
+  ],
+];
+
 export default function LandingPage() {
   useTheme();
 
@@ -24,6 +47,17 @@ export default function LandingPage() {
           name="description"
           content="PotatoAIHub (Potato AI) is an all-in-one AI chatbot platform: chat with Claude, GPT, Gemini and more AI models, generate images, and organize conversations into projects — all in one account. A fast, multi-model ChatGPT alternative."
         />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'FAQPage',
+            mainEntity: FAQS.map(([question, answer]) => ({
+              '@type': 'Question',
+              name: question,
+              acceptedAnswer: { '@type': 'Answer', text: answer },
+            })),
+          })}
+        </script>
       </Helmet>
 
       <header className="sticky top-0 z-10 border-b border-surface-3 bg-surface-1 px-6 py-3">
@@ -91,6 +125,18 @@ export default function LandingPage() {
               </span>
             ))}
           </div>
+        </div>
+
+        <div className="mt-16">
+          <h2 className="mb-6 text-xl font-semibold text-white">Frequently asked questions</h2>
+          <dl className="space-y-6">
+            {FAQS.map(([question, answer]) => (
+              <div key={question}>
+                <dt className="font-medium text-white">{question}</dt>
+                <dd className="mt-1 text-sm text-gray-400">{answer}</dd>
+              </div>
+            ))}
+          </dl>
         </div>
       </main>
 
