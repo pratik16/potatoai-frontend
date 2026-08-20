@@ -51,7 +51,7 @@ export default function RegisterPage() {
         <title>Create your account — PotatoAIHub | PotatoChat</title>
         <meta
           name="description"
-          content="Create a free PotatoAIHub account to start chatting on PotatoChat — access Claude, GPT, Gemini and more AI models in one place."
+          content="Create a free PotatoAIHub account to try PotatoChat, a ChatGPT alternative with Claude, GPT, Gemini and more AI models, image generation, and project-organized chat history."
         />
       </Helmet>
       <div className="flex w-full flex-col justify-center px-8 py-12 lg:w-1/2">

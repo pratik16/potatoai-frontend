@@ -67,7 +67,7 @@ export default function LoginPage() {
         <title>Sign in — PotatoAIHub | PotatoChat</title>
         <meta
           name="description"
-          content="Sign in to PotatoAIHub to continue your AI chat conversations on PotatoChat — Claude, GPT, Gemini and more, all in one place."
+          content="Sign in to PotatoAIHub to continue chatting with Claude, GPT, Gemini and more AI models on PotatoChat, your multi-model AI chat workspace."
         />
       </Helmet>
       {/* Form panel */}

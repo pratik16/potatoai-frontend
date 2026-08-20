@@ -16,7 +16,7 @@ export default function PrivacyPolicyPage() {
         <title>Privacy Policy — PotatoAIHub | PotatoChat</title>
         <meta
           name="description"
-          content="How PotatoAIHub collects, uses, and protects your data on PotatoChat, our AI chat service."
+          content="How PotatoAIHub collects, uses, and protects your data on PotatoChat, our multi-model AI chat app."
         />
       </Helmet>
       <header className="sticky top-0 z-10 border-b border-surface-3 bg-surface-1 px-6 py-3">

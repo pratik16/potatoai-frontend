@@ -7,6 +7,7 @@ import { MODELS } from '../utils/modelConfig';
 
 const FEATURES: [string, string][] = [
   ['Multi-model in one interface', 'Change models mid-conversation without losing context or history.'],
+  ['AI image generation', 'Generate images without leaving the chat — same account, same history.'],
   ['Projects & organised history', 'Group chats into projects. Find anything instantly with search.'],
   ['Streamed, fast responses', 'See answers appear in real time. No waiting, no spinners.'],
   ['Private & secure', 'Your chats are never used for training. Encrypted at rest.'],
@@ -18,10 +19,10 @@ export default function LandingPage() {
   return (
     <div className="flex min-h-screen flex-col bg-surface-0">
       <Helmet>
-        <title>PotatoAIHub — PotatoChat, AI Chat Reimagined</title>
+        <title>AI Chat App — Chat with Claude, GPT & Gemini in One Place | PotatoAIHub</title>
         <meta
           name="description"
-          content="PotatoAIHub is home to PotatoChat — chat with Claude, GPT, Gemini and more AI models in one place. Fast, streamed, multi-model AI chat."
+          content="PotatoAIHub (Potato AI) is an all-in-one AI chatbot platform: chat with Claude, GPT, Gemini and more AI models, generate images, and organize conversations into projects — all in one account. A fast, multi-model ChatGPT alternative."
         />
       </Helmet>
 
@@ -46,12 +47,12 @@ export default function LandingPage() {
         </div>
 
         <h1 className="mb-4 max-w-3xl text-3xl font-bold leading-tight text-white sm:text-4xl">
-          PotatoAIHub — PotatoChat, the smarter way to chat with AI
+          The AI chat app that puts Claude, GPT and Gemini in one place
         </h1>
         <p className="mb-10 max-w-2xl text-lg text-gray-400">
-          PotatoAIHub is the home of PotatoChat, an AI chat workspace that lets you switch between
-          Claude, GPT, Gemini and more — without switching tabs. One AI chat account, every model
-          you need.
+          PotatoAIHub is the home of PotatoChat, an all-in-one AI chatbot platform that lets you
+          switch between Claude, GPT, Gemini and more, generate images, and organize conversations
+          into projects — without switching tabs. One AI chat account, every model you need.
         </p>
 
         <div className="mb-14 flex flex-wrap gap-3">
