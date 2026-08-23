@@ -56,8 +56,8 @@ export async function pollImageAsset(
 // Keys are the SCREAMING_SNAKE_CASE `code` values the API returns — both on an HTTP
 // error body and on the `error` SSE frame. See backend/CLAUDE.md §1.
 const STREAM_ERRORS: Record<string, string> = {
-  RATE_LIMIT_EXCEEDED:   "You've reached your limit. Upgrade to Pro.",
-  INSUFFICIENT_CREDITS:  "You're out of credits. Upgrade to continue.",
+  RATE_LIMIT_EXCEEDED:   "You've reached your hourly message limit. Try again shortly.",
+  INSUFFICIENT_CREDITS:  "You're out of credits. They top up automatically — check back soon.",
   CONTEXT_TOO_LONG:      'This chat is near the context limit. Start a new chat.',
   PROVIDER_ERROR:        'AI provider error. Please try again.',
   MODEL_DISABLED:        'This model has been turned off. Pick another model to continue.',

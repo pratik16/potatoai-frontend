@@ -5,7 +5,7 @@ export interface User {
   email:               string;
   full_name:           string | null;
   avatar_url:          string | null;
-  plan:                'free' | 'pro' | 'team';
+  plan:                'free' | 'pro';
   timezone:            string;
   theme:               'dark' | 'light' | 'system';
   ui_theme:            'potato' | 'claude';

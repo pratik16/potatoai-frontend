@@ -8,7 +8,7 @@ import { BillingSection }        from '../features/settings/components/BillingSe
 import { AIPreferencesSection }  from '../features/settings/components/AIPreferencesSection';
 import { AppearanceSection }     from '../features/settings/components/AppearanceSection';
 import { NotificationsSection }  from '../features/settings/components/NotificationsSection';
-import { isLocalDev } from '../utils/env';
+import { isLocalDev, PLANS_ENABLED } from '../utils/env';
 
 const NAV = [
   { id: 'profile',      label: 'Profile',         icon: User,       group: 'ACCOUNT'      },
@@ -19,12 +19,16 @@ const NAV = [
   { id: 'notifications',label: 'Notifications',    icon: Bell,       group: 'PREFERENCES'  },
 ] as const;
 
+// Temporary: hide the Billing entry while plans are off (see PLANS_ENABLED), without
+// deleting it from NAV so re-enabling is a one-line flip.
+const VISIBLE_NAV = PLANS_ENABLED ? NAV : NAV.filter((n) => n.id !== 'billing');
+
 type NavId = typeof NAV[number]['id'];
 
 export default function SettingsPage() {
   const [active, setActive] = useState<NavId>('profile');
 
-  const groups = [...new Set(NAV.map((n) => n.group))];
+  const groups = [...new Set(VISIBLE_NAV.map((n) => n.group))];
 
   return (
     <div className="flex flex-1 overflow-hidden">
@@ -33,7 +37,7 @@ export default function SettingsPage() {
         {groups.map((group) => (
           <div key={group} className="mb-4">
             <p className="mb-1 px-2 text-xs font-semibold uppercase tracking-widest text-gray-600">{group}</p>
-            {NAV.filter((n) => n.group === group).map((n) => (
+            {VISIBLE_NAV.filter((n) => n.group === group).map((n) => (
               <button
                 key={n.id}
                 onClick={() => setActive(n.id)}
@@ -81,7 +85,7 @@ export default function SettingsPage() {
       <div className="flex-1 overflow-auto p-6">
         {active === 'profile'       && <ProfileSection />}
         {active === 'security'      && <SecuritySection />}
-        {active === 'billing'       && <BillingSection />}
+        {active === 'billing' && PLANS_ENABLED && <BillingSection />}
         {active === 'ai'            && <AIPreferencesSection />}
         {active === 'appearance'    && <AppearanceSection />}
         {active === 'notifications' && <NotificationsSection />}

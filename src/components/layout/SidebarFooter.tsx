@@ -5,6 +5,7 @@ import { Avatar } from '../ui/Avatar';
 import { useLogoutMutation } from '../../features/auth/authApi';
 import { clearCredentials } from '../../features/auth/authSlice';
 import { useAppDispatch } from '../../app/hooks';
+import { PLANS_ENABLED } from '../../utils/env';
 
 export function SidebarFooter({ user }: { user: User | null }) {
   const dispatch  = useAppDispatch();
@@ -33,9 +34,11 @@ export function SidebarFooter({ user }: { user: User | null }) {
           <Avatar src={user.avatar_url} name={user.full_name ?? user.username} size="sm" />
           <div className="min-w-0 flex-1">
             <p className="truncate text-xs font-medium text-white">{user.full_name ?? user.username ?? user.name}</p>
-            <p className="truncate text-xs uppercase text-gray-500">
-              {user.plan !== 'free' ? `${user.plan.toUpperCase()} PLAN` : 'FREE PLAN'}
-            </p>
+            {PLANS_ENABLED && (
+              <p className="truncate text-xs uppercase text-gray-500">
+                {user.plan !== 'free' ? `${user.plan.toUpperCase()} PLAN` : 'FREE PLAN'}
+              </p>
+            )}
           </div>
         </div>
       )}

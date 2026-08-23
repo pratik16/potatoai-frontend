@@ -1,13 +1,14 @@
 import { Zap } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useAppSelector } from '../../app/hooks';
+import { PLANS_ENABLED } from '../../utils/env';
 
 export function CreditPill() {
   const user = useAppSelector((s) => s.auth.user);
 
   if (!user) return null;
 
-  if (user.plan !== 'free') {
+  if (PLANS_ENABLED && user.plan !== 'free') {
     return (
       <span className="flex items-center gap-1 rounded-full bg-surface-3 px-2.5 py-1 text-xs font-medium text-yellow-400">
         <Zap className="h-3 w-3" /> ∞
