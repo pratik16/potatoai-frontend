@@ -6,8 +6,10 @@ import { ProjectCard } from '../features/projects/components/ProjectCard';
 import { ProjectFormModal } from '../features/projects/components/ProjectFormModal';
 import { Spinner } from '../components/ui/Spinner';
 import { Button } from '../components/ui/Button';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 export default function ProjectsPage() {
+  useDocumentTitle('Projects — PotatoAIHub');
   const { data: projects = [], isLoading } = useGetProjectsQuery({ sort: 'last_activity' });
   const { data: chats = [] } = useGetChatsQuery();
   const [modalOpen, setModalOpen] = useState(false);

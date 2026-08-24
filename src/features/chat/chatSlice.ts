@@ -3,8 +3,10 @@ import type { ChatState, ChatMeta, Message } from '../../types/chat.types';
 
 // Pre-fetch seed only. The live list comes from `GET /api/models` (admin-controlled
 // `is_active`); ModelSelector self-corrects `selectedModel` to the first live model
-// if this seed — or a previously chosen model — is no longer active.
-const DEFAULT_MODEL = 'claude-sonnet-4-5';
+// if this seed — or a previously chosen model — is no longer active. 'auto' is an
+// exception: ModelSelector's self-heal treats it as always valid whenever the API's
+// synthetic Auto row is present, so this default survives that check.
+const DEFAULT_MODEL = 'auto';
 
 const initialState: ChatState = {
   activeChatId:   null,

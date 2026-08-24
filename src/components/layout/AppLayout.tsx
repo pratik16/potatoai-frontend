@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useLayoutEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
@@ -11,6 +11,21 @@ import { useTheme } from '../../hooks/useTheme';
 export function AppLayout() {
   useKeyboard();
   useTheme();
+
+  // Deliberately NOT useDocumentTitle (plain useEffect) here: React fires child
+  // effects before parent effects on mount, so when a page (child of AppLayout)
+  // and AppLayout mount together in the same commit - e.g. right after login, or
+  // a hard reload straight into an authenticated route - a plain useEffect default
+  // here would run *after* the page's own useDocumentTitle and clobber it back to
+  // the generic title. useLayoutEffect runs in the layout phase, which completes
+  // (for the whole tree, parent included) strictly before any passive useEffect
+  // fires, so this default always applies first and the page's useDocumentTitle
+  // (a passive effect) reliably overrides it. Verified in the browser: without
+  // this, /chat/new right after login was stuck showing the AppLayout default
+  // instead of the page's title.
+  useLayoutEffect(() => {
+    document.title = 'PotatoAIHub | PotatoChat';
+  }, []);
 
   const dispatch    = useAppDispatch();
   const sidebarOpen = useAppSelector((s) => s.ui.sidebarOpen);

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import type { AppDispatch } from '../app/store';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
 import {
-  startStream, appendToken, appendThinking, updateArtifact, stopStream, resetStream,
+  startStream, appendToken, appendThinking, updateArtifact, setRoutedModel, stopStream, resetStream,
 } from '../features/chat/streamingSlice';
 import { addMessage, prependChat, setActiveChat, updateMessageById, setOutOfCredits } from '../features/chat/chatSlice';
 import { updateUser } from '../features/auth/authSlice';
@@ -216,6 +216,18 @@ export function useChat() {
                   case 'artifact_token':
                     dispatch(updateArtifact({ artifact_id: evt.artifact_id, type: evt.artifact_type, title: evt.title, content: evt.content ?? '' }));
                     break;
+                  case 'model_route':
+                    // Only sent when Auto routed this turn, and always before the first
+                    // token — lets the typing indicator show the real model immediately
+                    // instead of a generic "Auto" placeholder for the whole generation.
+                    dispatch(setRoutedModel({
+                      model:         evt.model,
+                      model_name:    evt.model_name,
+                      colour_hex:    evt.colour_hex,
+                      question_type: evt.question_type,
+                      source:        evt.source,
+                    }));
+                    break;
                   case 'done': {
                     const msgId = evt.message_id ?? crypto.randomUUID();
                     const assistantMsg: Message = {
@@ -229,6 +241,8 @@ export function useChat() {
                       edited_at: null, is_branch_root: false, created_at: new Date().toISOString(),
                       image_asset_id: evt.image_asset_id ?? null,
                       image_url: null,
+                      routed_from: evt.routed_from ?? null,
+                      question_type: evt.question_type ?? null,
                     };
                     dispatch(addMessage(assistantMsg));
                     if (evt.image_asset_id) {

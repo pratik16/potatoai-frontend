@@ -1,4 +1,5 @@
 import { clsx } from 'clsx';
+import { Sparkles } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -55,6 +56,15 @@ export function MessageBubble({ message }: { message: Message }) {
             <span className="rounded bg-surface-3 px-1.5 py-0.5 text-xs text-gray-400">
               {MODEL_NAMES[message.model] ?? message.model}
             </span>
+            {message.routed_from === 'auto' && (
+              <span
+                className="flex items-center gap-1 rounded bg-potato-500/10 px-1.5 py-0.5 text-xs text-potato-500"
+                title={message.question_type ? `Auto classified this as: ${message.question_type}` : 'Routed by Auto'}
+              >
+                <Sparkles className="h-3 w-3" />
+                Auto
+              </span>
+            )}
           </div>
         )}
 

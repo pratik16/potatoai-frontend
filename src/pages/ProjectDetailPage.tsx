@@ -16,6 +16,7 @@ import { Badge } from '../components/ui/Badge';
 import { ProjectChatListItem } from '../features/projects/components/ProjectChatListItem';
 import { useAppDispatch } from '../app/hooks';
 import { showToast } from '../app/uiSlice';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 export default function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -25,6 +26,8 @@ export default function ProjectDetailPage() {
   const [deleteProject] = useDeleteProjectMutation();
   const [editOpen, setEditOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  useDocumentTitle(project?.name ? `${project.name} — PotatoAIHub` : 'Project — PotatoAIHub');
 
   if (isLoading) {
     return (

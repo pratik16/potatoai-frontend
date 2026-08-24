@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Modal } from '../../../components/ui/Modal';
 import { Input } from '../../../components/ui/Input';
 import { Button } from '../../../components/ui/Button';
-import { MODELS } from '../../../utils/modelConfig';
+import { isTextModel } from '../../../utils/modelConfig';
+import { useGetModelsQuery } from '../../chat/chatApi';
 import {
   useCreateProjectMutation,
   useGetProjectQuery,
@@ -51,6 +52,8 @@ export function ProjectFormModal({ open, onClose, project, onSaved }: Props) {
   const [form, setForm] = useState<ProjectFormValues>(EMPTY);
   const [createProject, { isLoading: creating }] = useCreateProjectMutation();
   const [updateProject, { isLoading: updating }] = useUpdateProjectMutation();
+  const { data: allModels } = useGetModelsQuery();
+  const modelOptions = useMemo(() => allModels?.filter(isTextModel), [allModels]);
 
   const projectId = project?.id ?? project?._id;
   const { data: freshProject } = useGetProjectQuery(projectId!, {
@@ -219,7 +222,7 @@ export function ProjectFormModal({ open, onClose, project, onSaved }: Props) {
             className="w-full rounded-lg border border-surface-3 bg-surface-2 px-3 py-2.5 text-sm text-white focus:border-potato-500 focus:outline-none"
           >
             <option value="">Use chat default</option>
-            {MODELS.map((m) => (
+            {modelOptions?.map((m) => (
               <option key={m.slug} value={m.slug}>{m.name}</option>
             ))}
           </select>

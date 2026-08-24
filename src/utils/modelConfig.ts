@@ -16,6 +16,16 @@ export function isTextModel(model: { type?: string | null }): boolean {
   return model.type === undefined || model.type === null || model.type === 'text';
 }
 
+/**
+ * Is this the synthetic Auto-routing row `GET /api/models` prepends to `data`?
+ * Checks `is_auto` first (the field the API actually sets) and falls back to
+ * the slug so a bundle briefly ahead of a backend that omits the flag still
+ * recognises it.
+ */
+export function isAutoModel(model: { is_auto?: boolean; slug?: string }): boolean {
+  return model.is_auto === true || model.slug === 'auto';
+}
+
 export const MODELS = [
   { slug: 'claude-sonnet-4-6', name: 'Claude Sonnet 4.6', color: '#F59E0B', provider: 'anthropic', description: 'Latest Claude — best reasoning & coding'   },
   { slug: 'claude-sonnet-4-5', name: 'Claude Sonnet 4.5', color: '#F59E0B', provider: 'anthropic', description: 'Best for writing & reasoning'               },

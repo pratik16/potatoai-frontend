@@ -3,9 +3,11 @@ import { MessageInput } from '../features/chat/components/MessageInput';
 import { useEffect } from 'react';
 import { useAppDispatch } from '../app/hooks';
 import { setActiveChat, clearMessages } from '../features/chat/chatSlice';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 export default function NewChatPage() {
   const dispatch = useAppDispatch();
+  useDocumentTitle('New chat — PotatoAIHub');
 
   useEffect(() => {
     dispatch(setActiveChat(null));

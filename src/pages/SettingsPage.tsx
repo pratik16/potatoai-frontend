@@ -9,6 +9,7 @@ import { AIPreferencesSection }  from '../features/settings/components/AIPrefere
 import { AppearanceSection }     from '../features/settings/components/AppearanceSection';
 import { NotificationsSection }  from '../features/settings/components/NotificationsSection';
 import { isLocalDev, PLANS_ENABLED } from '../utils/env';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 const NAV = [
   { id: 'profile',      label: 'Profile',         icon: User,       group: 'ACCOUNT'      },
@@ -27,6 +28,7 @@ type NavId = typeof NAV[number]['id'];
 
 export default function SettingsPage() {
   const [active, setActive] = useState<NavId>('profile');
+  useDocumentTitle('Settings — PotatoAIHub');
 
   const groups = [...new Set(VISIBLE_NAV.map((n) => n.group))];
 

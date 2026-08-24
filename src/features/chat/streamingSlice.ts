@@ -1,11 +1,22 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import type { Artifact } from '../../types/artifact.types';
 
+/** The `model_route` SSE frame — arrives once, before any token frames, only when Auto routed the turn. */
+export interface RoutedModelInfo {
+  model:         string;
+  model_name:    string;
+  colour_hex:    string;
+  question_type: string;
+  source:        string;
+}
+
 interface StreamingState {
   isStreaming:       boolean;
   currentContent:    string;
   thinkingContent:   string;
   streamedArtifacts: Partial<Artifact>[];
+  /** Set mid-stream when Auto picked a model for this turn; cleared at the start of the next stream. */
+  routedModel:       RoutedModelInfo | null;
 }
 
 const initialState: StreamingState = {
@@ -13,6 +24,7 @@ const initialState: StreamingState = {
   currentContent:    '',
   thinkingContent:   '',
   streamedArtifacts: [],
+  routedModel:        null,
 };
 
 const streamingSlice = createSlice({
@@ -24,6 +36,7 @@ const streamingSlice = createSlice({
       state.currentContent    = '';
       state.thinkingContent   = '';
       state.streamedArtifacts = [];
+      state.routedModel       = null;
     },
     appendToken: (state, action: PayloadAction<string>) => {
       state.currentContent += action.payload;
@@ -41,6 +54,9 @@ const streamingSlice = createSlice({
         state.streamedArtifacts.push(action.payload);
       }
     },
+    setRoutedModel: (state, action: PayloadAction<RoutedModelInfo>) => {
+      state.routedModel = action.payload;
+    },
     stopStream: (state) => {
       state.isStreaming = false;
     },
@@ -53,6 +69,7 @@ export const {
   appendToken,
   appendThinking,
   updateArtifact,
+  setRoutedModel,
   stopStream,
   resetStream,
 } = streamingSlice.actions;

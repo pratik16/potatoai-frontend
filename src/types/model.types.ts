@@ -29,4 +29,14 @@ export interface AiModel {
    * an absent value as 'text' so a deploy-order skew cannot empty the picker.
    */
   type?:             ModelType;
+  /**
+   * Set on the synthetic auto-routing row `GET /api/models` prepends to `data`
+   * when auto-routing is enabled server-side (slug `'auto'`, id `0`,
+   * `sort_order -1`). Prefer this flag over `slug === 'auto'` when checking —
+   * go through `isAutoModel()` in `utils/modelConfig.ts` rather than testing
+   * either field directly.
+   */
+  is_auto?:              boolean;
+  /** Credit multiplier applied when Auto routes a turn, e.g. 0.5 = half credits. Only present on the auto row. */
+  auto_credit_multiplier?: number | null;
 }

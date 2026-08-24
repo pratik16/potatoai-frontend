@@ -8,6 +8,7 @@ import { ChatArea } from '../features/chat/components/ChatArea';
 import { MessageInput } from '../features/chat/components/MessageInput';
 import { Spinner } from '../components/ui/Spinner';
 import { pollImageAsset } from '../hooks/useChat';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 export default function ChatPage() {
   const { chatId } = useParams<{ chatId: string }>();
@@ -15,6 +16,8 @@ export default function ChatPage() {
   const token      = useAppSelector((s) => s.auth.token);
 
   const { data, isLoading } = useGetChatQuery(chatId!, { skip: !chatId });
+
+  useDocumentTitle(data?.title ? `${data.title} — PotatoAIHub` : 'Chat — PotatoAIHub');
 
   useEffect(() => {
     if (data) {

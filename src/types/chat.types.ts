@@ -34,6 +34,12 @@ export interface Message {
   // Client-side only: why the image never arrived. The spinner keys off
   // image_asset_id && !image_url, so without this a failed job spins forever.
   image_error?:     string | null;
+  // Set on the `done` SSE frame when the turn was routed by Auto rather than a
+  // user-picked model. `model` above is already the concrete model that
+  // answered (e.g. 'claude-sonnet-4-5') — these two only annotate *how* it got
+  // picked, for the "Auto → …" badge in MessageBubble.
+  routed_from?:     string | null;
+  question_type?:   string | null;
 }
 
 export interface Attachment {

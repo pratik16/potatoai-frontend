@@ -7,8 +7,10 @@ import { ModelUsageChart } from '../features/usage/components/ModelUsageChart';
 import { ActivityTable } from '../features/usage/components/ActivityTable';
 import { Spinner } from '../components/ui/Spinner';
 import { PLANS_ENABLED } from '../utils/env';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 export default function UsagePage() {
+  useDocumentTitle('Usage — PotatoAIHub');
   const { data, isLoading } = useGetUsageQuery();
   const creditBalance = useAppSelector((s) => s.auth.user?.credit_balance ?? 0);
 
