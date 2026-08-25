@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect, KeyboardEvent } from 'react';
-import { Send, Square, Paperclip, X, BookOpen } from 'lucide-react';
+import { Send, Square, Plus, X, BookOpen } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useChat } from '../../../hooks/useChat';
 import { useAppSelector, useAppDispatch } from '../../../app/hooks';
 import { showToast } from '../../../app/uiSlice';
 import { PromptLibraryPanel } from '../../prompts/PromptLibraryPanel';
+import { ModelSelector } from './ModelSelector';
 
 const MAX_CHARS   = 4000;
 const MAX_FILES   = 5;
@@ -14,9 +15,11 @@ const ALLOWED_TYPES = ['text/plain', 'application/pdf', 'text/markdown', 'image/
 interface MessageInputProps {
   /** When set, new chats are created inside this project (ChatGPT-style). */
   projectId?: string | null;
+  /** 'hero' centres in the empty-state; 'docked' pins to the bottom of an active chat. */
+  variant?: 'docked' | 'hero';
 }
 
-export function MessageInput({ projectId = null }: MessageInputProps) {
+export function MessageInput({ projectId = null, variant = 'docked' }: MessageInputProps) {
   const dispatch    = useAppDispatch();
   const [value, setValue]     = useState('');
   const [files, setFiles]     = useState<File[]>([]);
@@ -90,7 +93,7 @@ export function MessageInput({ projectId = null }: MessageInputProps) {
   }, [files]);
 
   return (
-    <div className="border-t border-surface-3 px-4 py-3">
+    <div className={variant === 'docked' ? 'border-t border-surface-3 px-4 py-3' : ''}>
       <div className="mx-auto max-w-3xl">
         {/* File previews */}
         {files.length > 0 && (
@@ -124,26 +127,26 @@ export function MessageInput({ projectId = null }: MessageInputProps) {
           </div>
         )}
 
-        <div className="relative rounded-2xl border border-surface-3 bg-surface-2 focus-within:border-potato-500">
+        <div className="rounded-3xl border border-surface-3 bg-surface-2 focus-within:border-potato-500">
           <textarea
             ref={textareaRef}
             value={value}
             onChange={(e) => setValue(e.target.value)}
             onInput={handleInput}
             onKeyDown={handleKeyDown}
-            placeholder="Message PotatoChat..."
+            placeholder={variant === 'hero' ? 'How can I help you today?' : 'Message PotatoChat...'}
             rows={1}
             maxLength={MAX_CHARS}
-            className="w-full resize-none bg-transparent px-4 pt-3 pb-12 text-sm text-white placeholder-gray-500 focus:outline-none"
+            className="w-full resize-none bg-transparent px-4 pt-3 pb-2 text-sm text-white placeholder-gray-500 focus:outline-none"
           />
 
-          <div className="absolute bottom-3 left-3 flex items-center gap-3">
+          <div className="flex items-center gap-2 px-3 pb-3">
             <button
               onClick={() => fileInputRef.current?.click()}
               title="Attach files"
               className="text-gray-500 hover:text-white"
             >
-              <Paperclip className="h-4 w-4" />
+              <Plus className="h-4 w-4" />
             </button>
             <button
               onClick={() => setShowPrompts((v) => !v)}
@@ -152,14 +155,19 @@ export function MessageInput({ projectId = null }: MessageInputProps) {
             >
               <BookOpen className="h-4 w-4" />
             </button>
-          </div>
 
-          <div className="absolute bottom-3 right-3 flex items-center gap-2">
-            <span className={clsx('text-xs', value.length > MAX_CHARS * 0.9 ? 'text-yellow-400' : 'text-gray-600')}>
-              {value.length}/{MAX_CHARS}
-            </span>
+            <div className="flex-1" />
+
+            <ModelSelector direction={variant === 'hero' ? 'down' : 'up'} />
+
+            {value.length > MAX_CHARS * 0.9 && (
+              <span className={clsx('text-xs', value.length >= MAX_CHARS ? 'text-red-400' : 'text-yellow-400')}>
+                {value.length}/{MAX_CHARS}
+              </span>
+            )}
+
             {isStreaming ? (
-              <button onClick={stopGeneration} className="flex h-7 w-7 items-center justify-center rounded-lg bg-surface-3 text-white hover:bg-surface-4">
+              <button onClick={stopGeneration} className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-surface-3 text-white hover:bg-surface-4">
                 <Square className="h-3.5 w-3.5 fill-white" />
               </button>
             ) : (
@@ -167,7 +175,7 @@ export function MessageInput({ projectId = null }: MessageInputProps) {
                 onClick={handleSend}
                 disabled={!value.trim() || outOfCredits}
                 title={outOfCredits ? 'Out of credits' : undefined}
-                className="flex h-7 w-7 items-center justify-center rounded-lg bg-potato-600 text-white hover:bg-potato-700 disabled:opacity-40"
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-potato-600 text-white hover:bg-potato-700 disabled:opacity-40"
               >
                 <Send className="h-3.5 w-3.5" />
               </button>

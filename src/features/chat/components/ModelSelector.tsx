@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ChevronDown, Sparkles } from 'lucide-react';
+import { ChevronDown, ChevronRight, Sparkles } from 'lucide-react';
+import { clsx } from 'clsx';
 import { useAppDispatch, useAppSelector } from '../../../app/hooks';
 import { Spinner } from '../../../components/ui/Spinner';
 import { setModel } from '../chatSlice';
@@ -8,22 +9,13 @@ import { isTextModel, isAutoModel } from '../../../utils/modelConfig';
 import type { AiModel } from '../../../types/model.types';
 
 const FALLBACK_COLOUR = '#8b5cf6';
+const TOP_N = 4;
 
-/**
- * "Picks the best model — 50% cheaper" for a 0.5 multiplier, computed from the
- * live value rather than hardcoded so an admin tuning it in Filament doesn't
- * leave stale copy in the picker.
- */
-function autoDiscountCopy(multiplier: number | null | undefined): string {
-  if (multiplier == null || multiplier >= 1) return 'Picks the best model for each message';
-  const pct = Math.round((1 - multiplier) * 100);
-  return `Picks the best model — ${pct}% cheaper`;
-}
-
-export function ModelSelector() {
+export function ModelSelector({ direction = 'down' }: { direction?: 'down' | 'up' }) {
   const dispatch      = useAppDispatch();
   const selectedModel = useAppSelector((s) => s.chat.selectedModel);
   const [open, setOpen] = useState(false);
+  const [showAll, setShowAll] = useState(false);
 
   // `GET /api/models` already filters on is_active, so this list is what admin
   // has switched on — but since the image catalogue it also carries image models,
@@ -56,6 +48,11 @@ export function ModelSelector() {
     dispatch(setModel(models[0].slug));
   }, [models, autoModel, selectedModel, dispatch]);
 
+  // Collapse the "More models" expansion whenever the panel closes.
+  useEffect(() => {
+    if (!open) setShowAll(false);
+  }, [open]);
+
   if (isLoading) {
     return (
       <div
@@ -80,6 +77,22 @@ export function ModelSelector() {
   // `current` can be momentarily undefined between the fetch landing and the
   // self-heal effect committing; show the model we are about to switch to.
   const active = current ?? models[0];
+
+  // Top-N real models, with the active selection spliced in if it fell outside
+  // the top N — otherwise picking a model from "More models" would make its own
+  // checkmark disappear the next time the panel opens collapsed. Auto is exempt:
+  // it's pinned in its own row above and never lives in `allReal`.
+  const allReal = realModels ?? [];
+  const hasMore = allReal.length > TOP_N;
+  const topModels = allReal.slice(0, TOP_N);
+  const activeReal = allReal.find((m) => m.slug === active.slug);
+  const activeInTop = topModels.some((m) => m.slug === active.slug);
+  const visibleRealModels =
+    showAll || !hasMore
+      ? allReal
+      : activeInTop || !activeReal
+        ? topModels
+        : [...topModels.slice(0, TOP_N - 1), activeReal];
 
   return (
     <div className="relative">
@@ -108,7 +121,11 @@ export function ModelSelector() {
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
           <div
             role="listbox"
-            className="absolute right-0 top-full z-20 mt-1 w-64 rounded-xl border border-surface-3 bg-surface-1 p-1 shadow-2xl"
+            className={clsx(
+              'absolute right-0 z-20 w-64 rounded-xl border border-surface-3 bg-surface-1 p-1 shadow-2xl',
+              direction === 'up' ? 'bottom-full mb-1' : 'top-full mt-1',
+              showAll && 'max-h-[60vh] overflow-y-auto',
+            )}
           >
             <p className="mb-1 px-3 pt-1 text-xs font-semibold uppercase tracking-widest text-gray-600">Select model</p>
             {autoModel && (
@@ -117,9 +134,19 @@ export function ModelSelector() {
                 <div className="my-1 border-t border-surface-3" />
               </>
             )}
-            {realModels?.map((m) => (
+            {visibleRealModels.map((m) => (
               <ModelOption key={m.slug} model={m} active={active.slug === m.slug} onSelect={() => { dispatch(setModel(m.slug)); setOpen(false); }} />
             ))}
+            {hasMore && !showAll && (
+              <button
+                type="button"
+                onClick={() => setShowAll(true)}
+                className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm text-gray-400 hover:bg-surface-2 hover:text-white"
+              >
+                More models
+                <ChevronRight className="h-3.5 w-3.5" />
+              </button>
+            )}
           </div>
         </>
       )}
@@ -129,7 +156,7 @@ export function ModelSelector() {
 
 function ModelOption({ model, active, onSelect }: { model: AiModel; active: boolean; onSelect: () => void }) {
   const auto = isAutoModel(model);
-  const description = auto ? autoDiscountCopy(model.auto_credit_multiplier) : model.description;
+  const description = auto ? 'Picks the best model for each message' : model.description;
 
   return (
     <button

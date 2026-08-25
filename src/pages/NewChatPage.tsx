@@ -15,11 +15,11 @@ export default function NewChatPage() {
   }, [dispatch]);
 
   return (
-    <div className="flex flex-1 flex-col overflow-hidden">
-      <div className="flex-1 overflow-y-auto">
+    <div className="flex flex-1 flex-col items-center justify-center overflow-y-auto px-4">
+      <div className="w-full max-w-3xl">
         <EmptyState />
+        <MessageInput variant="hero" />
       </div>
-      <MessageInput />
     </div>
   );
 }
