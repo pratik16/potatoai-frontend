@@ -15,14 +15,14 @@ export default function ChatPage() {
   const dispatch   = useAppDispatch();
   const token      = useAppSelector((s) => s.auth.token);
 
-  const { data, isLoading } = useGetChatQuery(chatId!, { skip: !chatId });
+  const { data, isLoading } = useGetChatQuery({ id: chatId! }, { skip: !chatId });
 
   useDocumentTitle(data?.title ? `${data.title} — PotatoAIHub` : 'Chat — PotatoAIHub');
 
   useEffect(() => {
     if (data) {
       dispatch(setActiveChat(data.id ?? data._id));
-      dispatch(setMessages(data.messages));
+      dispatch(setMessages({ messages: data.messages, has_more: data.has_more }));
 
       // Resume polling for any image that finished generating but image_url not yet set
       if (token) {

@@ -55,6 +55,8 @@ export async function pollImageAsset(
 
 // Keys are the SCREAMING_SNAKE_CASE `code` values the API returns — both on an HTTP
 // error body and on the `error` SSE frame. See backend/CLAUDE.md §1.
+// NOTE: DUPLICATE_MESSAGE_ID is intentionally not here — it is not a user-facing
+// failure, see the dedicated handling below.
 const STREAM_ERRORS: Record<string, string> = {
   RATE_LIMIT_EXCEEDED:   "You've reached your hourly message limit. Try again shortly.",
   INSUFFICIENT_CREDITS:  "You're out of credits. They top up automatically — check back soon.",
@@ -114,8 +116,15 @@ export function useChat() {
           size_bytes: f.size,
         }));
 
+      // Generated once per turn (outside doStream) so the PROVIDER_ERROR retry below
+      // resends the *same* id — that's what lets the backend recognize a retry as the
+      // same turn instead of persisting and billing a second user message. It also
+      // doubles as the optimistic message's id/_id: those are UI concerns only, and
+      // there's no reason for the wire id and the local id to diverge.
+      const clientMessageId = crypto.randomUUID();
+
       const userMsg: Message = {
-        id: crypto.randomUUID(), _id: crypto.randomUUID(),
+        id: clientMessageId, _id: clientMessageId,
         chat_id: chatId!, role: 'user', content,
         model: null, thinking_content: null, artifacts: [], attachments: optimisticAttachments,
         input_tokens: null, output_tokens: null, credits_deducted: null,
@@ -148,11 +157,15 @@ export function useChat() {
           fd.append('content', content);
           fd.append('model', selectedModel);
           fd.append('enable_thinking', '0');
+          fd.append('client_message_id', clientMessageId);
           files.forEach((f) => fd.append('files[]', f));
           body = fd;
         } else {
           headers['Content-Type'] = 'application/json';
-          body = JSON.stringify({ content, model: selectedModel, enable_thinking: false, enable_search: false });
+          body = JSON.stringify({
+            content, model: selectedModel, enable_thinking: false, enable_search: false,
+            client_message_id: clientMessageId,
+          });
         }
 
         let pendingImageAssetId: string | null = null;
@@ -165,8 +178,16 @@ export function useChat() {
 
           if (!res.ok) {
             const err = await res.json().catch(() => ({}));
-            const msg = STREAM_ERRORS[err.code ?? ''] ?? err.message ?? `HTTP ${res.status}`;
             // Branch on the machine-readable code, never the copy — see web/CLAUDE.md.
+            if (err.code === 'DUPLICATE_MESSAGE_ID') {
+              // This exact turn already landed server-side on an earlier attempt (the
+              // PROVIDER_ERROR retry raced a send that actually succeeded). There is
+              // nothing to show the user and nothing to re-send — just resync the
+              // transcript from the server's copy via the tag invalidation in `finally`.
+              dispatch(resetStream());
+              return;
+            }
+            const msg = STREAM_ERRORS[err.code ?? ''] ?? err.message ?? `HTTP ${res.status}`;
             if (err.code === 'INSUFFICIENT_CREDITS') {
               dispatch(setOutOfCredits(true));
               // The rejection means the server balance is lower than we think.
@@ -255,15 +276,20 @@ export function useChat() {
                     break;
                   }
                   case 'error': {
-                    const msg = STREAM_ERRORS[evt.code ?? ''] ?? evt.message ?? 'Stream error';
                     if (evt.code === 'PROVIDER_ERROR' && retryCount < 1) {
                       retryCount++;
                       setTimeout(() => doStream(), 2000);
                       return;
                     }
+                    if (evt.code === 'DUPLICATE_MESSAGE_ID') {
+                      // Same turn already persisted (see the non-ok branch above) —
+                      // just let `finally` refetch the chat instead of surfacing an error.
+                      break;
+                    }
                     if (evt.code === 'INSUFFICIENT_CREDITS') {
                       dispatch(setOutOfCredits(true));
                     }
+                    const msg = STREAM_ERRORS[evt.code ?? ''] ?? evt.message ?? 'Stream error';
                     dispatch(showToast({ message: msg, type: 'error' }));
                     break;
                   }

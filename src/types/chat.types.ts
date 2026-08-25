@@ -55,6 +55,8 @@ export interface ChatDetail extends ChatMeta {
   system_prompt: string | null;
   share_token:   string | null;
   messages:      Message[];
+  /** True when older messages exist before the oldest one in this page. */
+  has_more:      boolean;
 }
 
 export interface ChatState {
@@ -62,13 +64,17 @@ export interface ChatState {
   selectedModel:  string;
   chats:          ChatMeta[];
   activeMessages: Message[];
+  /** True when an older page can still be fetched with `before_id`. */
+  hasMoreMessages: boolean;
   /** Set when the API rejects a send with code INSUFFICIENT_CREDITS. */
   outOfCredits:   boolean;
 }
 
 export interface SendMessageRequest {
-  content:         string;
-  model:           string;
-  enable_thinking: boolean;
-  enable_search:   boolean;
+  content:            string;
+  model:              string;
+  enable_thinking:    boolean;
+  enable_search:      boolean;
+  /** Stable id generated once per turn so a retry doesn't re-persist/re-bill it. */
+  client_message_id:  string;
 }

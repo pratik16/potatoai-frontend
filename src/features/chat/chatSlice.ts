@@ -9,12 +9,19 @@ import type { ChatState, ChatMeta, Message } from '../../types/chat.types';
 const DEFAULT_MODEL = 'auto';
 
 const initialState: ChatState = {
-  activeChatId:   null,
-  selectedModel:  DEFAULT_MODEL,
-  chats:          [],
-  activeMessages: [],
-  outOfCredits:   false,
+  activeChatId:    null,
+  selectedModel:   DEFAULT_MODEL,
+  chats:           [],
+  activeMessages:  [],
+  hasMoreMessages: false,
+  outOfCredits:    false,
 };
+
+/** A single fetched page of transcript, newest-page-first per the `GET /chats/{id}` contract. */
+interface MessagesPage {
+  messages: Message[];
+  has_more: boolean;
+}
 
 const chatSlice = createSlice({
   name: 'chat',
@@ -22,7 +29,10 @@ const chatSlice = createSlice({
   reducers: {
     setActiveChat: (state, action: PayloadAction<string | null>) => {
       state.activeChatId = action.payload;
-      if (!action.payload) state.activeMessages = [];
+      if (!action.payload) {
+        state.activeMessages = [];
+        state.hasMoreMessages = false;
+      }
     },
     setModel: (state, action: PayloadAction<string>) => {
       state.selectedModel = action.payload;
@@ -44,8 +54,17 @@ const chatSlice = createSlice({
     removeChat: (state, action: PayloadAction<string>) => {
       state.chats = state.chats.filter((c) => c._id !== action.payload);
     },
-    setMessages: (state, action: PayloadAction<Message[]>) => {
-      state.activeMessages = action.payload;
+    /** Replaces the transcript wholesale — the initial (most-recent-page) load only. */
+    setMessages: (state, action: PayloadAction<MessagesPage>) => {
+      state.activeMessages = action.payload.messages;
+      state.hasMoreMessages = action.payload.has_more;
+    },
+    /** Splices an older page onto the front without disturbing the loaded tail — scroll-up pagination. */
+    prependMessages: (state, action: PayloadAction<MessagesPage>) => {
+      const known = new Set(state.activeMessages.map((m) => m._id ?? m.id));
+      const older = action.payload.messages.filter((m) => !known.has(m._id ?? m.id));
+      state.activeMessages = [...older, ...state.activeMessages];
+      state.hasMoreMessages = action.payload.has_more;
     },
     addMessage: (state, action: PayloadAction<Message>) => {
       state.activeMessages.push(action.payload);
@@ -62,6 +81,7 @@ const chatSlice = createSlice({
     },
     clearMessages: (state) => {
       state.activeMessages = [];
+      state.hasMoreMessages = false;
     },
     setOutOfCredits: (state, action: PayloadAction<boolean>) => {
       state.outOfCredits = action.payload;
@@ -78,6 +98,7 @@ export const {
   toggleStar,
   removeChat,
   setMessages,
+  prependMessages,
   addMessage,
   updateLastMessage,
   updateMessageById,

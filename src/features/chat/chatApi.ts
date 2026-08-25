@@ -26,9 +26,15 @@ export const chatApi = createApi({
       transformResponse: (r: PaginatedChats) => r.data,
       providesTags: ['Chat'],
     }),
-    getChat: builder.query<ChatDetail, string>({
-      query: (id) => `/chats/${id}`,
-      providesTags: (_r, _e, id) => [{ type: 'Chat', id }, { type: 'Messages', id }],
+    getChat: builder.query<ChatDetail, { id: string; before_id?: string; limit?: number }>({
+      query: ({ id, before_id, limit }) => {
+        const q = new URLSearchParams();
+        if (before_id) q.set('before_id', before_id);
+        if (limit)     q.set('limit', String(limit));
+        const qs = q.toString();
+        return `/chats/${id}${qs ? `?${qs}` : ''}`;
+      },
+      providesTags: (_r, _e, { id }) => [{ type: 'Chat', id }, { type: 'Messages', id }],
     }),
     createChat: builder.mutation<ChatMeta, { title?: string; model?: string; project_id?: string | null }>({
       query: (body) => ({ url: '/chats', method: 'POST', body }),
@@ -75,6 +81,7 @@ export const chatApi = createApi({
 export const {
   useGetChatsQuery,
   useGetChatQuery,
+  useLazyGetChatQuery,
   useCreateChatMutation,
   useUpdateChatMutation,
   useDeleteChatMutation,
