@@ -19,7 +19,9 @@ export default function LoginPage() {
   const sessionExpired = searchParams.get('session_expired') === '1';
   const [login, { isLoading }] = useLoginMutation();
 
-  const [form, setForm]   = useState({ email: '', password: '', remember_me: false });
+  // There is no "remember me" box; without it the backend issues a 1-day token and
+  // returning users land on "session expired". Match Android and Google: 30 days.
+  const [form, setForm]   = useState({ email: '', password: '', remember_me: true });
   const [error, setError] = useState(sessionExpired ? 'Your session has expired. Please log in again.' : '');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
