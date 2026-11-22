@@ -1,19 +1,33 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import type { RootState } from '../../app/store';
 import type { Project, ProjectDetail, ProjectFileLimits } from '../../types/project.types';
+import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from '@reduxjs/toolkit/query';
 import { chatApi } from '../chat/chatApi';
+import { routeIfEmailNotVerified } from '../../utils/baseQuery';
+
+const rawProjectsBase = fetchBaseQuery({
+  baseUrl: '/api',
+  prepareHeaders: (headers, { getState }) => {
+    const token = (getState() as RootState).auth.token;
+    if (token) headers.set('Authorization', `Bearer ${token}`);
+    headers.set('Accept', 'application/json');
+    return headers;
+  },
+});
+
+// Project file uploads are a paid route (phase0b-auth.md §3): send an unverified
+// account to the verify screen, same as every baseQueryWithReauth API.
+const projectsBaseQuery: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryError> = async (
+  args, api, extraOptions,
+) => {
+  const result = await rawProjectsBase(args, api, extraOptions);
+  routeIfEmailNotVerified(result.error, typeof args === 'string' ? args : args.url, api.dispatch);
+  return result;
+};
 
 export const projectsApi = createApi({
   reducerPath: 'projectsApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: '/api',
-    prepareHeaders: (headers, { getState }) => {
-      const token = (getState() as RootState).auth.token;
-      if (token) headers.set('Authorization', `Bearer ${token}`);
-      headers.set('Accept', 'application/json');
-      return headers;
-    },
-  }),
+  baseQuery: projectsBaseQuery,
   tagTypes: ['Project'],
   endpoints: (builder) => ({
     getProjects: builder.query<Project[], { sort?: string } | void>({

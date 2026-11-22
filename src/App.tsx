@@ -4,6 +4,7 @@ import { useAppSelector } from './app/hooks';
 import { AppLayout } from './components/layout/AppLayout';
 import { AuthLayout } from './components/layout/AuthLayout';
 import { Spinner } from './components/ui/Spinner';
+import { EmailVerificationRedirect } from './components/auth/EmailVerificationRedirect';
 import { isLocalDev } from './utils/env';
 
 const LandingPage         = lazy(() => import('./pages/LandingPage'));
@@ -47,6 +48,7 @@ function Loading() {
 export default function App() {
   return (
     <Suspense fallback={<Loading />}>
+      <EmailVerificationRedirect />
       <Routes>
         {/* Public marketing home */}
         <Route path="/" element={<PublicHome />} />

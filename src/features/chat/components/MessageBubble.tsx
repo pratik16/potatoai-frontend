@@ -35,7 +35,7 @@ export function MessageBubble({ message }: { message: Message }) {
   const isUser = message.role === 'user';
 
   return (
-    <div className={clsx('group mb-6 flex gap-3', isUser && 'flex-row-reverse')}>
+    <div data-message-role={message.role} className={clsx('group mb-6 flex gap-3', isUser && 'flex-row-reverse')}>
       {isUser ? (
         <Avatar src={user?.avatar_url} name={user?.full_name ?? user?.username} size="sm" />
       ) : (

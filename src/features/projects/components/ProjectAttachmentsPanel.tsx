@@ -135,7 +135,11 @@ export function ProjectAttachmentsPanel({ project, variant = 'sidebar' }: Props)
         await addFile({ projectId, file }).unwrap();
         dispatch(showToast({ message: `${file.name} attached`, type: 'success' }));
       } catch (err: unknown) {
-        const msg = (err as { data?: { message?: string } })?.data?.message ?? `Could not upload ${file.name}`;
+        const e = err as { status?: number; data?: { code?: string; message?: string } };
+        // baseQuery has already sent an unverified account to /verify-email; stop here
+        // rather than toasting over the page it just navigated to.
+        if (e.status === 403 && e.data?.code === 'EMAIL_NOT_VERIFIED') return;
+        const msg = e.data?.message ?? `Could not upload ${file.name}`;
         dispatch(showToast({ message: msg, type: 'error' }));
       }
     }

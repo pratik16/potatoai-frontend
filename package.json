@@ -6,6 +6,7 @@
   "scripts": {
     "sync:agents": "node scripts/sync-agent-docs.mjs",
     "dev": "npm run sync:agents && vite",
+    "dev:localtest": "vite --mode localtest",
     "build:ci": "tsc && vite build",
     "build": "npm run sync:agents && npm run build:ci",
     "preview": "vite preview",

@@ -5,12 +5,15 @@ import { useForgotPasswordMutation } from '../features/auth/authApi';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { BrandLogo } from '../components/BrandLogo';
+import { useAuthThrottle } from '../features/auth/useAuthThrottle';
+import { ThrottleNotice } from '../features/auth/components/ThrottleNotice';
 
 export default function ForgotPasswordPage() {
   const [forgotPassword, { isLoading }] = useForgotPasswordMutation();
   const [email, setEmail]   = useState('');
   const [sent, setSent]     = useState(false);
   const [error, setError]   = useState('');
+  const { isThrottled, secondsLeft, catchThrottle } = useAuthThrottle();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,6 +22,7 @@ export default function ForgotPasswordPage() {
       await forgotPassword({ email }).unwrap();
       setSent(true);
     } catch (err: unknown) {
+      if (catchThrottle(err)) return;
       setError((err as { data?: { message?: string } }).data?.message ?? 'Request failed');
     }
   };
@@ -56,8 +60,10 @@ export default function ForgotPasswordPage() {
               leftIcon={<Mail className="h-4 w-4" />}
               required
             />
-            {error && <p className="text-sm text-red-400">{error}</p>}
-            <Button type="submit" loading={isLoading} size="lg" className="w-full">
+            {isThrottled
+              ? <ThrottleNotice key="throttle" secondsLeft={secondsLeft} />
+              : error && <p role="alert" className="text-sm text-red-400">{error}</p>}
+            <Button type="submit" loading={isLoading} disabled={isThrottled} size="lg" className="w-full">
               Send reset link
             </Button>
             <p className="text-center text-sm text-gray-500">

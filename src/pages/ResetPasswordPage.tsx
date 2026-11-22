@@ -5,6 +5,8 @@ import { useResetPasswordMutation } from '../features/auth/authApi';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { BrandLogo } from '../components/BrandLogo';
+import { useAuthThrottle } from '../features/auth/useAuthThrottle';
+import { ThrottleNotice } from '../features/auth/components/ThrottleNotice';
 
 export default function ResetPasswordPage() {
   const navigate         = useNavigate();
@@ -17,6 +19,7 @@ export default function ResetPasswordPage() {
     password_confirmation: '',
   });
   const [error, setError] = useState('');
+  const { isThrottled, secondsLeft, catchThrottle } = useAuthThrottle();
 
   const token = searchParams.get('token') ?? '';
 
@@ -31,6 +34,7 @@ export default function ResetPasswordPage() {
       await resetPassword({ token, ...form }).unwrap();
       navigate('/login');
     } catch (err: unknown) {
+      if (catchThrottle(err)) return;
       const e = err as { data?: { message?: string; errors?: Record<string, string[]> } };
       const firstError = e.data?.errors ? Object.values(e.data.errors)[0]?.[0] : undefined;
       setError(firstError ?? e.data?.message ?? 'Reset failed');
@@ -79,9 +83,11 @@ export default function ResetPasswordPage() {
             required
           />
 
-          {error && <p className="text-sm text-red-400">{error}</p>}
+          {isThrottled
+            ? <ThrottleNotice key="throttle" secondsLeft={secondsLeft} />
+            : error && <p role="alert" className="text-sm text-red-400">{error}</p>}
 
-          <Button type="submit" loading={isLoading} size="lg" className="w-full">
+          <Button type="submit" loading={isLoading} disabled={isThrottled} size="lg" className="w-full">
             Reset password →
           </Button>
           <p className="text-center text-sm text-gray-500">

@@ -5,9 +5,13 @@ import { useAppDispatch, useAppSelector } from '../app/hooks';
 import {
   startStream, appendToken, appendThinking, updateArtifact, setRoutedModel, stopStream, resetStream,
 } from '../features/chat/streamingSlice';
-import { addMessage, prependChat, setActiveChat, updateMessageById, setOutOfCredits } from '../features/chat/chatSlice';
+import {
+  addMessage, prependChat, setActiveChat, updateMessageById, setOutOfCredits, setStreamError,
+} from '../features/chat/chatSlice';
 import { updateUser } from '../features/auth/authSlice';
-import { showToast } from '../app/uiSlice';
+import { showToast, requireEmailVerification } from '../app/uiSlice';
+import { isEmailNotVerified } from '../features/auth/verification';
+import { retryAfterSeconds, type ApiErrorBody } from '../utils/apiError';
 import { chatApi } from '../features/chat/chatApi';
 import { settingsApi } from '../features/settings/settingsApi';
 import type { Message } from '../types/chat.types';
@@ -57,15 +61,30 @@ export async function pollImageAsset(
 // error body and on the `error` SSE frame. See backend/CLAUDE.md §1.
 // NOTE: DUPLICATE_MESSAGE_ID is intentionally not here — it is not a user-facing
 // failure, see the dedicated handling below.
-const STREAM_ERRORS: Record<string, string> = {
-  RATE_LIMIT_EXCEEDED:   "You've reached your hourly message limit. Try again shortly.",
-  INSUFFICIENT_CREDITS:  "You're out of credits. They top up automatically — check back soon.",
-  CONTEXT_TOO_LONG:      'This chat is near the context limit. Start a new chat.',
+export const STREAM_ERRORS: Record<string, string> = {
+  RATE_LIMIT_EXCEEDED:   "You've hit the message limit for now.",
+  INSUFFICIENT_CREDITS:  "You're out of credits.",
+  CONTEXT_TOO_LONG:      'This chat is too long for the selected model.',
   PROVIDER_ERROR:        'AI provider error. Please try again.',
   MODEL_DISABLED:        'This model has been turned off. Pick another model to continue.',
   MODEL_NOT_FOUND:       'That model is no longer available. Pick another model to continue.',
   MODEL_PRICING_MISSING: 'This model is temporarily unavailable. Pick another model or try again later.',
+  // Client-side codes: failures that never reached (or never came back from) the API.
+  STREAM_TIMEOUT:        'The response timed out.',
+  NETWORK_ERROR:         'Connection lost before the reply finished.',
 };
+
+/**
+ * Codes where re-sending the same turn can succeed. "Try again" resends with the
+ * same client_message_id, so the backend resumes the turn instead of saving and
+ * billing a second copy of the user message.
+ */
+const RETRYABLE = new Set(['PROVIDER_ERROR', 'STREAM_TIMEOUT', 'NETWORK_ERROR']);
+
+export interface SendOptions {
+  /** Re-send an earlier turn that failed, instead of starting a new one. */
+  retryClientMessageId?: string;
+}
 
 export function useChat() {
   const dispatch      = useAppDispatch();
@@ -76,10 +95,11 @@ export function useChat() {
   const abortRef      = useRef<AbortController | null>(null);
 
   const sendMessage = useCallback(
-    async (content: string, projectId: string | null = null, files: File[] = []) => {
+    async (content: string, projectId: string | null = null, files: File[] = [], options: SendOptions = {}) => {
       if (!token) return;
 
       dispatch(startStream());
+      dispatch(setStreamError(null));
 
       let chatId = activeChatId;
 
@@ -90,7 +110,15 @@ export function useChat() {
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' },
             body:    JSON.stringify({ title: content.slice(0, 60), model: selectedModel, project_id: projectId }),
           });
-          if (!res.ok) throw new Error('Failed to create chat');
+          if (!res.ok) {
+            const body: ApiErrorBody = await res.json().catch(() => ({}));
+            if (isEmailNotVerified(res.status, body)) {
+              dispatch(resetStream());
+              dispatch(requireEmailVerification({ email: null }));
+              return;
+            }
+            throw new Error('Failed to create chat');
+          }
           const chat = await res.json();
           chatId = chat.id ?? chat._id;
           dispatch(setActiveChat(chatId));
@@ -121,7 +149,8 @@ export function useChat() {
       // same turn instead of persisting and billing a second user message. It also
       // doubles as the optimistic message's id/_id: those are UI concerns only, and
       // there's no reason for the wire id and the local id to diverge.
-      const clientMessageId = crypto.randomUUID();
+      const isRetry = !!options.retryClientMessageId;
+      const clientMessageId = options.retryClientMessageId ?? crypto.randomUUID();
 
       const userMsg: Message = {
         id: clientMessageId, _id: clientMessageId,
@@ -131,7 +160,30 @@ export function useChat() {
         edited_at: null, is_branch_root: false, created_at: new Date().toISOString(),
         image_asset_id: null, image_url: null,
       };
-      dispatch(addMessage(userMsg));
+      // A retry resumes a turn whose user message is already on screen and on the server.
+      if (!isRetry) dispatch(addMessage(userMsg));
+
+      // One place every failure lands, before the stream (HTTP error body) or mid-stream
+      // (`error` SSE frame). Branches on `code` only — the copy is for display.
+      const reportError = (code: string, apiMessage?: string, retryAfter: number | null = null) => {
+        if (code === 'EMAIL_NOT_VERIFIED') {
+          // Contract phase0b-auth.md §3: paid call from an unverified account.
+          dispatch(requireEmailVerification({ email: null }));
+          return;
+        }
+        if (code === 'INSUFFICIENT_CREDITS') {
+          dispatch(setOutOfCredits(true));
+          // The rejection means the server balance is lower than we think.
+          dispatch(settingsApi.util.invalidateTags(['Credits']));
+        }
+        dispatch(setStreamError({
+          code,
+          message: STREAM_ERRORS[code] ?? apiMessage ?? 'Something went wrong. Please try again.',
+          chatId:  chatId ?? null,
+          retryAt: retryAfter ? Date.now() + retryAfter * 1000 : null,
+          retry:   RETRYABLE.has(code) ? { content, clientMessageId } : null,
+        }));
+      };
 
       const controller = new AbortController();
       abortRef.current = controller;
@@ -144,7 +196,7 @@ export function useChat() {
           clearInterval(timeoutId);
           controller.abort();
           dispatch(resetStream());
-          dispatch(showToast({ message: 'Response timed out. Please try again.', type: 'error' }));
+          reportError('STREAM_TIMEOUT');
         }
       }, 1000);
 
@@ -170,6 +222,10 @@ export function useChat() {
 
         let pendingImageAssetId: string | null = null;
         let pendingImageMsgId:   string | null = null;
+        // Set when this attempt hands over to the silent PROVIDER_ERROR retry: the
+        // stream is still live, so `finally` must not tear down the timer, the Stop
+        // button or the typing indicator underneath it.
+        let willRetry = false;
 
         try {
           const res = await fetch(`/api/chats/${chatId}/messages`, {
@@ -187,14 +243,8 @@ export function useChat() {
               dispatch(resetStream());
               return;
             }
-            const msg = STREAM_ERRORS[err.code ?? ''] ?? err.message ?? `HTTP ${res.status}`;
-            if (err.code === 'INSUFFICIENT_CREDITS') {
-              dispatch(setOutOfCredits(true));
-              // The rejection means the server balance is lower than we think.
-              dispatch(settingsApi.util.invalidateTags(['Credits']));
-            }
-            dispatch(showToast({ message: msg, type: 'error' }));
             dispatch(resetStream());
+            reportError(err.code ?? 'SERVER_ERROR', err.message ?? err.detail, retryAfterSeconds(err));
             return;
           }
 
@@ -278,7 +328,16 @@ export function useChat() {
                   case 'error': {
                     if (evt.code === 'PROVIDER_ERROR' && retryCount < 1) {
                       retryCount++;
-                      setTimeout(() => doStream(), 2000);
+                      willRetry = true;
+                      setTimeout(() => {
+                        // Stop pressed during the 2s wait: don't resurrect the stream.
+                        if (controller.signal.aborted) return;
+                        lastTokenAt = Date.now();
+                        // Drop any partial text from the failed attempt; the resume
+                        // regenerates the whole reply.
+                        dispatch(startStream());
+                        doStream();
+                      }, 2000);
                       return;
                     }
                     if (evt.code === 'DUPLICATE_MESSAGE_ID') {
@@ -286,11 +345,7 @@ export function useChat() {
                       // just let `finally` refetch the chat instead of surfacing an error.
                       break;
                     }
-                    if (evt.code === 'INSUFFICIENT_CREDITS') {
-                      dispatch(setOutOfCredits(true));
-                    }
-                    const msg = STREAM_ERRORS[evt.code ?? ''] ?? evt.message ?? 'Stream error';
-                    dispatch(showToast({ message: msg, type: 'error' }));
+                    reportError(evt.code ?? 'PROVIDER_ERROR', evt.message, retryAfterSeconds(evt));
                     break;
                   }
                 }
@@ -299,17 +354,20 @@ export function useChat() {
           }
         } catch (err: unknown) {
           if ((err as Error).name !== 'AbortError') {
-            dispatch(showToast({ message: (err as Error).message ?? 'Connection error', type: 'error' }));
+            reportError('NETWORK_ERROR');
           }
         } finally {
-          clearInterval(timeoutId);
-          dispatch(stopStream());
-          abortRef.current = null;
-          dispatch(chatApi.util.invalidateTags([{ type: 'Chat', id: chatId! }, 'Chat']));
-          // Every turn now costs credits, so the cached balance is stale the
-          // moment a stream ends. Nothing invalidated this tag before, which
-          // left Settings/Billing showing a balance that never moved.
-          dispatch(settingsApi.util.invalidateTags(['Credits']));
+          if (!willRetry) {
+            clearInterval(timeoutId);
+            dispatch(stopStream());
+            abortRef.current = null;
+            dispatch(chatApi.util.invalidateTags([{ type: 'Chat', id: chatId! }, 'Chat']));
+            // Every turn now costs credits, so the cached balance is stale the
+            // moment a stream ends. Nothing invalidated this tag before, which
+            // left Settings/Billing showing a balance that never moved.
+            dispatch(settingsApi.util.invalidateTags(['Credits']));
+          }
+          // else: the retry owns the stream (timer, Stop, indicator) from here.
         }
 
         // Poll for image result if an image-edit job was dispatched

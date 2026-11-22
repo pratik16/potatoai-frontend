@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, KeyboardEvent } from 'react';
+import { Link } from 'react-router-dom';
 import { Send, Square, Plus, X, BookOpen } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useChat } from '../../../hooks/useChat';
@@ -6,6 +7,7 @@ import { useAppSelector, useAppDispatch } from '../../../app/hooks';
 import { showToast } from '../../../app/uiSlice';
 import { PromptLibraryPanel } from '../../prompts/PromptLibraryPanel';
 import { ModelSelector } from './ModelSelector';
+import { ChatErrorNotice } from './ChatErrorNotice';
 
 const MAX_CHARS   = 4000;
 const MAX_FILES   = 5;
@@ -30,6 +32,8 @@ export function MessageInput({ projectId = null, variant = 'docked' }: MessageIn
   const isStreaming  = useAppSelector((s) => s.streaming.isStreaming);
   const activeChatId = useAppSelector((s) => s.chat.activeChatId);
   const outOfCredits = useAppSelector((s) => s.chat.outOfCredits);
+  // The notice already says "out of credits" with a link; don't repeat it in the footer.
+  const creditsNoticeShown = useAppSelector((s) => s.chat.streamError?.code === 'INSUFFICIENT_CREDITS');
 
   // Restore draft
   useEffect(() => {
@@ -95,6 +99,10 @@ export function MessageInput({ projectId = null, variant = 'docked' }: MessageIn
   return (
     <div className={variant === 'docked' ? 'border-t border-surface-3 px-4 py-3' : ''}>
       <div className="mx-auto max-w-3xl">
+        <ChatErrorNotice
+          onRetry={(retry) => sendMessage(retry.content, projectId, [], { retryClientMessageId: retry.clientMessageId })}
+        />
+
         {/* File previews */}
         {files.length > 0 && (
           <div className="mb-2 flex flex-wrap gap-2">
@@ -167,13 +175,14 @@ export function MessageInput({ projectId = null, variant = 'docked' }: MessageIn
             )}
 
             {isStreaming ? (
-              <button onClick={stopGeneration} className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-surface-3 text-white hover:bg-surface-4">
+              <button onClick={stopGeneration} aria-label="Stop generating" title="Stop generating" className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-surface-3 text-white hover:bg-surface-4">
                 <Square className="h-3.5 w-3.5 fill-white" />
               </button>
             ) : (
               <button
                 onClick={handleSend}
                 disabled={!value.trim() || outOfCredits}
+                aria-label="Send message"
                 title={outOfCredits ? 'Out of credits' : undefined}
                 className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-potato-600 text-white hover:bg-potato-700 disabled:opacity-40"
               >
@@ -183,10 +192,10 @@ export function MessageInput({ projectId = null, variant = 'docked' }: MessageIn
           </div>
         </div>
 
-        {outOfCredits ? (
+        {outOfCredits && !creditsNoticeShown ? (
           <p className="mt-2 text-center text-xs text-red-400">
-            You're out of credits.{' '}
-            <a href="/usage" className="underline hover:text-red-300">Add more to keep chatting.</a>
+            You&apos;re out of credits.{' '}
+            <Link to="/usage" className="underline hover:text-red-300">See when they top up.</Link>
           </p>
         ) : (
           <p className="mt-2 text-center text-xs text-gray-600">

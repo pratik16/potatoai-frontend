@@ -10,6 +10,10 @@ export interface ApiErrorBody {
   detail?:  string;
   /** Present only on 422 `VALIDATION_ERROR`, keyed by field name. */
   errors?:  Record<string, string[]>;
+  /** 429s: seconds until the limit resets (TOO_MANY_ATTEMPTS, msg/img RATE_LIMIT_EXCEEDED). */
+  retry_after_seconds?: number;
+  /** 429s from the generic RateLimiter middleware use this older key for the same thing. */
+  retry_after?: number;
 }
 
 export interface ApiError {
@@ -41,4 +45,15 @@ export function apiFieldErrors(err: unknown): Record<string, string> {
       .filter(([, messages]) => messages?.length)
       .map(([field, messages]) => [field, messages[0]]),
   );
+}
+
+/**
+ * Seconds until a 429 resets, whichever key the endpoint used. `null` when the
+ * body carries neither (e.g. a mid-stream provider rate limit), so callers can
+ * omit the "resets at" line instead of inventing a time.
+ */
+export function retryAfterSeconds(data: ApiErrorBody | null | undefined): number | null {
+  const raw = data?.retry_after_seconds ?? data?.retry_after;
+  const n = typeof raw === 'string' ? Number(raw) : raw;
+  return typeof n === 'number' && Number.isFinite(n) && n > 0 ? Math.ceil(n) : null;
 }

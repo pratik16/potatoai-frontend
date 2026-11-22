@@ -4,9 +4,13 @@ import { Button } from '../components/ui/Button';
 import { Spinner } from '../components/ui/Spinner';
 import { useVerifyEmailKeyMutation } from '../features/auth/authApi';
 import { BrandLogo } from '../components/BrandLogo';
+import { useAppDispatch, useAppSelector } from '../app/hooks';
+import { updateUser } from '../features/auth/authSlice';
 
 export default function VerifyPage() {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const isAuthenticated = useAppSelector((s) => s.auth.isAuthenticated);
   const [searchParams] = useSearchParams();
 
   const key = searchParams.get('key') ?? '';
@@ -26,13 +30,22 @@ export default function VerifyPage() {
       setStatus({ type: 'idle' });
       try {
         await verifyEmailKey({ key }).unwrap();
-        setStatus({ type: 'success', message: 'Email verified. You can sign in now.' });
-        navigate('/login?verified=1', { replace: true });
+        setStatus({ type: 'success', message: 'Email verified.' });
+        // Contract §7: a session that already exists (register signs you in) works as
+        // soon as the email is verified, so go straight back to the chat.
+        if (isAuthenticated) {
+          dispatch(updateUser({ email_verified_at: new Date().toISOString() }));
+          navigate('/chat/new', { replace: true });
+        } else {
+          navigate('/login?verified=1', { replace: true });
+        }
       } catch (e: unknown) {
         const anyErr = e as { data?: { detail?: string; message?: string } };
         setStatus({ type: 'error', message: anyErr.data?.detail ?? anyErr.data?.message ?? 'Verification failed.' });
       }
     })();
+    // isAuthenticated is read once: verifying must not re-run if it changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [error, key, navigate, verifyEmailKey]);
 
   return (

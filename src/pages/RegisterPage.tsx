@@ -10,6 +10,9 @@ import { Input } from '../components/ui/Input';
 import { SocialAuthButtons } from '../components/auth/SocialAuthButtons';
 import { BrandLogo } from '../components/BrandLogo';
 import { apiErrorMessage, apiFieldErrors } from '../utils/apiError';
+import { useAuthThrottle } from '../features/auth/useAuthThrottle';
+import { ThrottleNotice } from '../features/auth/components/ThrottleNotice';
+import { goToVerifyEmail } from '../features/auth/verification';
 
 export default function RegisterPage() {
   const dispatch  = useAppDispatch();
@@ -19,6 +22,7 @@ export default function RegisterPage() {
   const [form, setForm]   = useState({ name: '', email: '', password: '', password_confirmation: '' });
   const [error, setError] = useState('');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const { isThrottled, secondsLeft, catchThrottle } = useAuthThrottle();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,9 +34,16 @@ export default function RegisterPage() {
     }
     try {
       const result = await register(form).unwrap();
+      // Keep the session even when unverified: the contract (§7) has the same token
+      // start working as soon as the email link is clicked, with no second login.
       dispatch(setCredentials(result));
+      if (result.requires_verification) {
+        goToVerifyEmail(navigate, result.user?.email ?? form.email, { replace: true });
+        return;
+      }
       navigate('/chat/new');
     } catch (err: unknown) {
+      if (catchThrottle(err)) return;
       // Before the API returned 422s these arrived as a bare 500, so the map was
       // always empty and every field error collapsed into one generic line.
       const fields = apiFieldErrors(err);
@@ -117,9 +128,11 @@ export default function RegisterPage() {
               required
             />
 
-            {error && <p className="text-sm text-red-400">{error}</p>}
+            {isThrottled
+              ? <ThrottleNotice key="throttle" secondsLeft={secondsLeft} />
+              : error && <p role="alert" className="text-sm text-red-400">{error}</p>}
 
-            <Button type="submit" loading={isLoading} size="lg" className="w-full">
+            <Button type="submit" loading={isLoading} disabled={isThrottled} size="lg" className="w-full">
               Create account →
             </Button>
           </form>

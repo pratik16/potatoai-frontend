@@ -11,6 +11,9 @@ import { SocialAuthButtons } from '../components/auth/SocialAuthButtons';
 import { BrandLogo } from '../components/BrandLogo';
 import { MODELS } from '../utils/modelConfig';
 import { apiErrorMessage, apiFieldErrors, asApiError } from '../utils/apiError';
+import { useAuthThrottle } from '../features/auth/useAuthThrottle';
+import { ThrottleNotice } from '../features/auth/components/ThrottleNotice';
+import { goToVerifyEmail, isEmailNotVerified } from '../features/auth/verification';
 
 export default function LoginPage() {
   const dispatch    = useAppDispatch();
@@ -24,6 +27,7 @@ export default function LoginPage() {
   const [form, setForm]   = useState({ email: '', password: '', remember_me: true });
   const [error, setError] = useState(sessionExpired ? 'Your session has expired. Please log in again.' : '');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const { isThrottled, secondsLeft, catchThrottle } = useAuthThrottle();
 
   useEffect(() => {
     if (sessionExpired) {
@@ -40,19 +44,14 @@ export default function LoginPage() {
       dispatch(setCredentials(result));
       navigate('/chat/new');
     } catch (err: unknown) {
+      if (catchThrottle(err)) return;
+
       const anyErr  = asApiError(err);
       const message = apiErrorMessage(err, 'Login failed');
 
-      const looksLikeUnverified =
-        anyErr.status === 403 && anyErr.data?.code === 'EMAIL_NOT_VERIFIED';
-
-      if (looksLikeUnverified) {
-        const email = form.email?.trim();
-        if (email) sessionStorage.setItem('pending_verification_email', email);
-        navigate(`/verify-email${email ? `?email=${encodeURIComponent(email)}` : ''}`, {
-          replace: true,
-          state: { email },
-        });
+      // Unchanged by phase0b (contract §2): 403 EMAIL_NOT_VERIFIED → verify screen.
+      if (isEmailNotVerified(anyErr.status, anyErr.data)) {
+        goToVerifyEmail(navigate, form.email, { replace: true });
         return;
       }
 
@@ -119,9 +118,11 @@ export default function LoginPage() {
               />
             </div>
 
-            {error && <p className="text-sm text-red-400">{error}</p>}
+            {isThrottled
+              ? <ThrottleNotice key="throttle" secondsLeft={secondsLeft} />
+              : error && <p role="alert" className="text-sm text-red-400">{error}</p>}
 
-            <Button type="submit" loading={isLoading} size="lg" className="w-full">
+            <Button type="submit" loading={isLoading} disabled={isThrottled} size="lg" className="w-full">
               Sign in →
             </Button>
           </form>

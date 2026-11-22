@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import type { ChatState, ChatMeta, Message } from '../../types/chat.types';
+import type { ChatState, ChatMeta, ChatStreamError, Message } from '../../types/chat.types';
 
 // Pre-fetch seed only. The live list comes from `GET /api/models` (admin-controlled
 // `is_active`); ModelSelector self-corrects `selectedModel` to the first live model
@@ -15,6 +15,7 @@ const initialState: ChatState = {
   activeMessages:  [],
   hasMoreMessages: false,
   outOfCredits:    false,
+  streamError:     null,
 };
 
 /** A single fetched page of transcript, newest-page-first per the `GET /chats/{id}` contract. */
@@ -86,6 +87,9 @@ const chatSlice = createSlice({
     setOutOfCredits: (state, action: PayloadAction<boolean>) => {
       state.outOfCredits = action.payload;
     },
+    setStreamError: (state, action: PayloadAction<ChatStreamError | null>) => {
+      state.streamError = action.payload;
+    },
   },
 });
 
@@ -104,6 +108,7 @@ export const {
   updateMessageById,
   clearMessages,
   setOutOfCredits,
+  setStreamError,
 } = chatSlice.actions;
 
 export default chatSlice.reducer;

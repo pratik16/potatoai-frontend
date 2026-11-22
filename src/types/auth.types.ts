@@ -50,6 +50,12 @@ export interface AuthResponse {
   token:        string;
   access_token: string;
   user:         User;
+  /**
+   * Register only: true when the new account's email still needs verifying
+   * (replica/contracts/phase0b-auth.md §1). The client must route to /verify-email,
+   * not the chat. Absent on older backends and on every other auth response.
+   */
+  requires_verification?: boolean;
 }
 
 export interface ActiveSession {

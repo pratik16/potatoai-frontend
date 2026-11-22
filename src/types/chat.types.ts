@@ -68,6 +68,24 @@ export interface ChatState {
   hasMoreMessages: boolean;
   /** Set when the API rejects a send with code INSUFFICIENT_CREDITS. */
   outOfCredits:   boolean;
+  /** The last failed send, shown above the input with the action that fixes it (replica U03). */
+  streamError:    ChatStreamError | null;
+}
+
+/**
+ * A send that failed, either before the stream (HTTP error body) or mid-stream (an
+ * `error` SSE frame). `code` is the API's machine code; the UI branches on it only.
+ */
+export interface ChatStreamError {
+  code:            string;
+  /** Display copy only — never branch on it. */
+  message:         string;
+  /** The chat the failure belongs to, so it doesn't follow the user into another chat. */
+  chatId:          string | null;
+  /** Epoch ms when a RATE_LIMIT_EXCEEDED resets, if the API said. */
+  retryAt:         number | null;
+  /** Lets "Try again" resume the same turn (same client_message_id, no duplicate bill). */
+  retry:           { content: string; clientMessageId: string } | null;
 }
 
 export interface SendMessageRequest {

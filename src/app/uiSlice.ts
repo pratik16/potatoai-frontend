@@ -6,14 +6,24 @@ interface UiState {
   mobileDrawerOpen:      boolean;
   isOnline:              boolean;
   toast:                 { message: string; type: 'success' | 'error' | 'info' } | null;
+  /**
+   * Set when a paid call answers 403 EMAIL_NOT_VERIFIED (replica/contracts/phase0b-auth.md §3).
+   * Code outside the router (baseQuery, the SSE hook) raises it; <EmailVerificationRedirect>
+   * consumes it and navigates to /verify-email with `state: { email }`.
+   */
+  verificationRequired:  { email: string | null } | null;
 }
 
+// A 256px sidebar leaves a phone ~120px for the chat, so start collapsed below `md`.
+const isNarrowViewport = typeof window !== 'undefined' && window.innerWidth < 768;
+
 const initialState: UiState = {
-  sidebarOpen:           true,
+  sidebarOpen:           !isNarrowViewport,
   keyboardShortcutsOpen: false,
   mobileDrawerOpen:      false,
   isOnline:              typeof navigator !== 'undefined' ? navigator.onLine : true,
   toast:                 null,
+  verificationRequired:  null,
 };
 
 const uiSlice = createSlice({
@@ -27,6 +37,10 @@ const uiSlice = createSlice({
     setOnline:               (state, action: PayloadAction<boolean>) => { state.isOnline = action.payload; },
     showToast:               (state, action: PayloadAction<UiState['toast']>) => { state.toast = action.payload; },
     clearToast:              (state) => { state.toast = null; },
+    requireEmailVerification: (state, action: PayloadAction<{ email: string | null }>) => {
+      state.verificationRequired = action.payload;
+    },
+    clearEmailVerificationRequired: (state) => { state.verificationRequired = null; },
   },
 });
 
@@ -38,6 +52,8 @@ export const {
   setOnline,
   showToast,
   clearToast,
+  requireEmailVerification,
+  clearEmailVerificationRequired,
 } = uiSlice.actions;
 
 export default uiSlice.reducer;
