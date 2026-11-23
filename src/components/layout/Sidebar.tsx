@@ -42,8 +42,14 @@ export function Sidebar() {
         <Link to="/" className="flex items-center gap-2">
           <BrandLogo size="sm" />
         </Link>
-        <button onClick={() => dispatch(setSidebarOpen(false))} className="text-gray-500 hover:text-white">
-          <ChevronLeft className="h-4 w-4" />
+        <button
+          type="button"
+          onClick={() => dispatch(setSidebarOpen(false))}
+          aria-label="Close sidebar"
+          title="Close sidebar"
+          className="rounded text-gray-500 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-potato-500"
+        >
+          <ChevronLeft className="h-4 w-4" aria-hidden="true" />
         </button>
       </div>
 
@@ -113,7 +119,7 @@ export function Sidebar() {
           </>
         )}
         {chats.length === 0 && search && (
-          <p className="mt-4 px-2 text-xs text-gray-600">No chats matching "{search}"</p>
+          <p className="mt-4 px-2 text-xs text-gray-600">No chats matching &ldquo;{search}&rdquo;</p>
         )}
       </div>
 

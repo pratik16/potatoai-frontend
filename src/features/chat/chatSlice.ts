@@ -57,7 +57,15 @@ const chatSlice = createSlice({
     },
     /** Replaces the transcript wholesale — the initial (most-recent-page) load only. */
     setMessages: (state, action: PayloadAction<MessagesPage>) => {
-      state.activeMessages = action.payload.messages;
+      const incoming = action.payload.messages;
+      // A reply stopped mid-stream is shown at once as a local `partial-*` message (see
+      // useChat's stopGeneration); the server saves its own copy only once it notices the
+      // abort. Until a page arrives with that reply, i.e. while the server transcript
+      // still ends on the user message, keep the partial instead of erasing it.
+      const tail = state.activeMessages[state.activeMessages.length - 1];
+      const keepPartial = tail?.role === 'assistant' && tail.id.startsWith('partial-')
+        && incoming[incoming.length - 1]?.role === 'user';
+      state.activeMessages = keepPartial ? [...incoming, tail] : incoming;
       state.hasMoreMessages = action.payload.has_more;
     },
     /** Splices an older page onto the front without disturbing the loaded tail — scroll-up pagination. */
@@ -79,6 +87,14 @@ const chatSlice = createSlice({
         (m) => m.id === action.payload.id || m._id === action.payload.id,
       );
       if (idx !== -1) Object.assign(state.activeMessages[idx], action.payload.update);
+    },
+    /**
+     * Drops every message after `id` (exclusive), the local mirror of what the
+     * regenerate PATCH does server-side. No-op when `id` isn't loaded.
+     */
+    truncateAfter: (state, action: PayloadAction<string>) => {
+      const idx = state.activeMessages.findIndex((m) => m.id === action.payload || m._id === action.payload);
+      if (idx !== -1) state.activeMessages = state.activeMessages.slice(0, idx + 1);
     },
     clearMessages: (state) => {
       state.activeMessages = [];
@@ -106,6 +122,7 @@ export const {
   addMessage,
   updateLastMessage,
   updateMessageById,
+  truncateAfter,
   clearMessages,
   setOutOfCredits,
   setStreamError,

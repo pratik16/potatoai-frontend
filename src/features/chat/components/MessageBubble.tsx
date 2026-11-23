@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { clsx } from 'clsx';
 import { Sparkles } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
@@ -9,7 +10,12 @@ import { useAppSelector } from '../../../app/hooks';
 import { Avatar } from '../../../components/ui/Avatar';
 import { MODEL_COLORS, MODEL_NAMES } from '../../../utils/modelConfig';
 import { ThinkingBlock } from './ThinkingBlock';
-import { MessageActions } from './MessageActions';
+import { MessageActions, type RegenerateTarget } from './MessageActions';
+
+// Module-level so ReactMarkdown sees stable plugin arrays between renders.
+const REMARK_PLUGINS = [remarkGfm, remarkMath];
+const REHYPE_KATEX   = [[rehypeKatex, { throwOnError: false }]] as NonNullable<React.ComponentProps<typeof ReactMarkdown>['rehypePlugins']>;
+const REHYPE_NONE: NonNullable<React.ComponentProps<typeof ReactMarkdown>['rehypePlugins']> = [];
 
 function AttachmentImages({ attachments }: { attachments: Attachment[] }) {
   const images = attachments.filter((a) => a.mime_type?.startsWith('image/'));
@@ -30,8 +36,24 @@ function AttachmentImages({ attachments }: { attachments: Attachment[] }) {
   );
 }
 
-export function MessageBubble({ message }: { message: Message }) {
+interface MessageBubbleProps {
+  message:     Message;
+  /** Where Regenerate points for this reply; null/undefined hides it. */
+  regenerate?: RegenerateTarget | null;
+  /** Shared-chat view: no rating, no regenerate. */
+  readOnly?:   boolean;
+}
+
+/**
+ * Memoised: ChatArea re-renders on every streamed token, and none of that touches
+ * the settled bubbles above the typing indicator.
+ */
+export const MessageBubble = memo(function MessageBubble({ message, regenerate, readOnly = false }: MessageBubbleProps) {
   const user = useAppSelector((s) => s.auth.user);
+  // A03 "Math rendering". Undefined (an older stored session) means the API default: on.
+  // Off still parses $…$ with remark-math, so the source is shown verbatim as code
+  // instead of being mangled by markdown escapes, just without KaTeX typesetting.
+  const mathOn = user?.math_rendering !== false;
   const isUser = message.role === 'user';
 
   return (
@@ -80,7 +102,7 @@ export function MessageBubble({ message }: { message: Message }) {
             {isUser ? (
               <span className="whitespace-pre-wrap">{message.content}</span>
             ) : (
-              <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[[rehypeKatex, { throwOnError: false }]]}>
+              <ReactMarkdown remarkPlugins={REMARK_PLUGINS} rehypePlugins={mathOn ? REHYPE_KATEX : REHYPE_NONE}>
                 {message.content}
               </ReactMarkdown>
             )}
@@ -113,8 +135,8 @@ export function MessageBubble({ message }: { message: Message }) {
           </div>
         )}
 
-        {!isUser && <MessageActions message={message} />}
+        {!isUser && <MessageActions message={message} regenerate={regenerate} readOnly={readOnly} />}
       </div>
     </div>
   );
-}
+});

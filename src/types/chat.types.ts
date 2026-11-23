@@ -40,7 +40,11 @@ export interface Message {
   // picked, for the "Auto → …" badge in MessageBubble.
   routed_from?:     string | null;
   question_type?:   string | null;
+  /** The caller's own rating of this reply (F005). Absent on older API builds: treat as null. */
+  feedback?:        FeedbackVote | null;
 }
+
+export type FeedbackVote = 'up' | 'down';
 
 export interface Attachment {
   filename:      string;
@@ -85,8 +89,33 @@ export interface ChatStreamError {
   /** Epoch ms when a RATE_LIMIT_EXCEEDED resets, if the API said. */
   retryAt:         number | null;
   /** Lets "Try again" resume the same turn (same client_message_id, no duplicate bill). */
-  retry:           { content: string; clientMessageId: string } | null;
+  retry:           StreamRetry | null;
 }
+
+/**
+ * What "Try again" re-runs. Both kinds reuse the failed attempt's client_message_id,
+ * so the backend recognises a repeat of a turn that actually landed (409
+ * DUPLICATE_MESSAGE_ID) instead of saving and billing it twice.
+ */
+export type StreamRetry =
+  | {
+      kind:            'send';
+      content:         string;
+      clientMessageId: string;
+      /**
+       * False when the API refused the send before the stream started: the server
+       * never saved the user message, and the post-error refetch removed its
+       * optimistic bubble, so the retry has to put it back.
+       */
+      persisted:       boolean;
+    }
+  | {
+      kind:            'regenerate';
+      /** The user message whose reply is regenerated (the PATCH target). */
+      userMessageId:   string;
+      content:         string;
+      clientMessageId: string;
+    };
 
 export interface SendMessageRequest {
   content:            string;

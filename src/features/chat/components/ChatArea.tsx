@@ -1,8 +1,9 @@
-import { useCallback, useLayoutEffect, useRef } from 'react';
+import { useCallback, useLayoutEffect, useMemo, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useAppDispatch, useAppSelector } from '../../../app/hooks';
 import { MessageBubble } from './MessageBubble';
+import type { RegenerateTarget } from './MessageActions';
 import { TypingIndicator } from './TypingIndicator';
 import { Spinner } from '../../../components/ui/Spinner';
 import { useLazyGetChatQuery } from '../chatApi';
@@ -22,6 +23,27 @@ export function ChatArea() {
   const isStreaming    = useAppSelector((s) => s.streaming.isStreaming);
   const current         = useAppSelector((s) => s.streaming.currentContent);
   const thinking         = useAppSelector((s) => s.streaming.thinkingContent);
+
+  // Per row: the user message a reply answers (the regenerate PATCH target) and how
+  // many messages follow the reply. Recomputed only when the transcript changes, not
+  // per streamed token, so the memoised bubbles keep stable props.
+  const regenerateTargets = useMemo(() => {
+    const targets: (RegenerateTarget | null)[] = [];
+    let lastUser: (typeof messages)[number] | null = null;
+    messages.forEach((m, i) => {
+      if (m.role === 'user') {
+        lastUser = m;
+        targets.push(null);
+        return;
+      }
+      targets.push(lastUser ? {
+        userMessageId: lastUser._id ?? lastUser.id,
+        userContent:   lastUser.content,
+        laterCount:    messages.length - 1 - i,
+      } : null);
+    });
+    return targets;
+  }, [messages]);
 
   const parentRef = useRef<HTMLDivElement>(null);
   const [triggerGetChat, { isFetching: isLoadingOlder }] = useLazyGetChatQuery();
@@ -121,7 +143,7 @@ export function ChatArea() {
                   transform: `translateY(${virtualRow.start}px)`,
                 }}
               >
-                <MessageBubble message={msg} />
+                <MessageBubble message={msg} regenerate={regenerateTargets[virtualRow.index]} />
               </div>
             );
           })}

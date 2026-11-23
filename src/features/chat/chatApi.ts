@@ -1,5 +1,5 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
-import type { ChatMeta, ChatDetail } from '../../types/chat.types';
+import type { ChatMeta, ChatDetail, FeedbackVote } from '../../types/chat.types';
 import type { AiModel } from '../../types/model.types';
 import { baseQueryWithReauth } from '../../utils/baseQuery';
 
@@ -62,7 +62,12 @@ export const chatApi = createApi({
       query: ({ id, project_id }) => ({ url: `/chats/${id}/move`, method: 'PATCH', body: { project_id } }),
       invalidatesTags: ['Chat'],
     }),
-    submitFeedback: builder.mutation<void, { chatId: string; msgId: string; vote: 'up' | 'down' }>({
+    /**
+     * Rates a reply (F005). `vote: null` clears the caller's rating. No tag is
+     * invalidated: MessageActions updates the message optimistically, and a
+     * transcript refetch per click would re-render the whole chat.
+     */
+    submitFeedback: builder.mutation<{ vote?: FeedbackVote | null } | void, { chatId: string; msgId: string; vote: FeedbackVote | null }>({
       query: ({ chatId, msgId, vote }) => ({
         url: `/chats/${chatId}/messages/${msgId}/feedback`,
         method: 'POST',

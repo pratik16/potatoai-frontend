@@ -47,7 +47,7 @@ export function AppLayout() {
     <div className="flex h-screen overflow-hidden bg-surface-0 text-white">
       {!isOnline && (
         <div className="fixed left-0 right-0 top-0 z-50 bg-yellow-800 py-2 text-center text-xs text-yellow-100">
-          You're offline. Reconnect to continue.
+          You&apos;re offline. Reconnect to continue.
         </div>
       )}
 
@@ -55,10 +55,13 @@ export function AppLayout() {
 
       {!sidebarOpen && (
         <button
+          type="button"
           onClick={() => dispatch(setSidebarOpen(true))}
-          className="absolute left-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-surface-2 p-1 text-gray-400 hover:text-white"
+          aria-label="Open sidebar"
+          title="Open sidebar"
+          className="absolute left-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-surface-2 p-1 text-gray-400 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-potato-500"
         >
-          <ChevronRight className="h-4 w-4" />
+          <ChevronRight className="h-4 w-4" aria-hidden="true" />
         </button>
       )}
 

@@ -6,7 +6,7 @@ import { setStreamError } from '../chatSlice';
 import type { ChatStreamError } from '../../../types/chat.types';
 
 interface ChatErrorNoticeProps {
-  /** Re-sends the failed turn (same client_message_id); shown for retryable codes only. */
+  /** Repeats the failed send or regenerate (same client_message_id); shown for retryable codes only. */
   onRetry: (retry: NonNullable<ChatStreamError['retry']>) => void;
 }
 
@@ -29,6 +29,8 @@ const actionClass =
  *   INSUFFICIENT_CREDITS → link to /usage
  *   CONTEXT_TOO_LONG     → "Start a new chat"
  *   RATE_LIMIT_EXCEEDED  → when it resets, if the API sent retry_after(_seconds)
+ *   STREAM_LIMIT         → the API's own message ("You already have 2 replies generating…")
+ *                          and "Try again"; no automatic retry loop (contract phase1.md §1)
  *   PROVIDER_ERROR, timeouts, dropped connections → "Try again" (resumes the same turn)
  * EMAIL_NOT_VERIFIED never lands here: useChat routes it to /verify-email.
  */

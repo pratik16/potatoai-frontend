@@ -28,7 +28,7 @@ export function MessageInput({ projectId = null, variant = 'docked' }: MessageIn
   const [showPrompts, setShowPrompts] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { sendMessage, stopGeneration } = useChat();
+  const { sendMessage, retryTurn, stopGeneration } = useChat();
   const isStreaming  = useAppSelector((s) => s.streaming.isStreaming);
   const activeChatId = useAppSelector((s) => s.chat.activeChatId);
   const outOfCredits = useAppSelector((s) => s.chat.outOfCredits);
@@ -100,7 +100,7 @@ export function MessageInput({ projectId = null, variant = 'docked' }: MessageIn
     <div className={variant === 'docked' ? 'border-t border-surface-3 px-4 py-3' : ''}>
       <div className="mx-auto max-w-3xl">
         <ChatErrorNotice
-          onRetry={(retry) => sendMessage(retry.content, projectId, [], { retryClientMessageId: retry.clientMessageId })}
+          onRetry={(retry) => retryTurn(retry, projectId)}
         />
 
         {/* File previews */}
@@ -116,17 +116,26 @@ export function MessageInput({ projectId = null, variant = 'docked' }: MessageIn
                       className="h-16 w-16 rounded-lg border border-surface-3 object-cover"
                     />
                     <button
+                      type="button"
                       onClick={() => removeFile(i)}
-                      className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-gray-700 text-white hover:bg-red-600"
+                      aria-label={`Remove ${f.name}`}
+                      title={`Remove ${f.name}`}
+                      className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-gray-700 text-white hover:bg-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-potato-500 [@media(pointer:coarse)]:h-6 [@media(pointer:coarse)]:w-6"
                     >
-                      <X className="h-2.5 w-2.5" />
+                      <X className="h-2.5 w-2.5" aria-hidden="true" />
                     </button>
                   </>
                 ) : (
                   <div className="flex items-center gap-1.5 rounded-lg border border-surface-3 bg-surface-2 px-2 py-1 text-xs text-gray-300">
                     <span className="truncate max-w-[120px]">{f.name}</span>
-                    <button onClick={() => removeFile(i)} className="text-gray-500 hover:text-white">
-                      <X className="h-3 w-3" />
+                    <button
+                      type="button"
+                      onClick={() => removeFile(i)}
+                      aria-label={`Remove ${f.name}`}
+                      title={`Remove ${f.name}`}
+                      className="rounded text-gray-500 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-potato-500"
+                    >
+                      <X className="h-3 w-3" aria-hidden="true" />
                     </button>
                   </div>
                 )}
@@ -145,23 +154,29 @@ export function MessageInput({ projectId = null, variant = 'docked' }: MessageIn
             placeholder={variant === 'hero' ? 'How can I help you today?' : 'Message PotatoChat...'}
             rows={1}
             maxLength={MAX_CHARS}
+            aria-label="Message PotatoChat"
             className="w-full resize-none bg-transparent px-4 pt-3 pb-2 text-sm text-white placeholder-gray-500 focus:outline-none"
           />
 
           <div className="flex items-center gap-2 px-3 pb-3">
             <button
+              type="button"
               onClick={() => fileInputRef.current?.click()}
+              aria-label="Attach files"
               title="Attach files"
-              className="text-gray-500 hover:text-white"
+              className="rounded text-gray-500 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-potato-500"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-4 w-4" aria-hidden="true" />
             </button>
             <button
+              type="button"
               onClick={() => setShowPrompts((v) => !v)}
+              aria-label="Prompt library"
+              aria-pressed={showPrompts}
               title="Prompt library"
-              className={clsx('hover:text-white', showPrompts ? 'text-potato-400' : 'text-gray-500')}
+              className={clsx('rounded hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-potato-500', showPrompts ? 'text-potato-400' : 'text-gray-500')}
             >
-              <BookOpen className="h-4 w-4" />
+              <BookOpen className="h-4 w-4" aria-hidden="true" />
             </button>
 
             <div className="flex-1" />
@@ -176,17 +191,17 @@ export function MessageInput({ projectId = null, variant = 'docked' }: MessageIn
 
             {isStreaming ? (
               <button onClick={stopGeneration} aria-label="Stop generating" title="Stop generating" className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-surface-3 text-white hover:bg-surface-4">
-                <Square className="h-3.5 w-3.5 fill-white" />
+                <Square className="h-3.5 w-3.5 fill-white" aria-hidden="true" />
               </button>
             ) : (
               <button
                 onClick={handleSend}
                 disabled={!value.trim() || outOfCredits}
                 aria-label="Send message"
-                title={outOfCredits ? 'Out of credits' : undefined}
+                title={outOfCredits ? 'Out of credits' : 'Send message'}
                 className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-potato-600 text-white hover:bg-potato-700 disabled:opacity-40"
               >
-                <Send className="h-3.5 w-3.5" />
+                <Send className="h-3.5 w-3.5" aria-hidden="true" />
               </button>
             )}
           </div>

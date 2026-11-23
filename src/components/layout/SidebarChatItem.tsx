@@ -98,13 +98,19 @@ export function SidebarChatItem({ chat, active }: Props) {
 
       <div ref={menuRef} className="relative mr-1 shrink-0">
         <button
+          type="button"
           onClick={(e) => { e.preventDefault(); setMenuOpen((o) => !o); }}
+          aria-label={`Options for ${chat.title || 'New chat'}`}
+          title="Chat options"
+          aria-haspopup="menu"
+          aria-expanded={menuOpen}
           className={clsx(
-            'rounded p-1 text-gray-600 hover:text-white',
-            menuOpen ? 'opacity-100' : 'opacity-0 group-hover:opacity-100',
+            'rounded p-1 text-gray-600 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-potato-500',
+            // Hover-reveal only where hovering exists (U01); always shown on touch, and on keyboard focus.
+            menuOpen ? 'opacity-100' : 'opacity-100 [@media(hover:hover)_and_(pointer:fine)]:opacity-0 group-hover:opacity-100 focus-visible:opacity-100',
           )}
         >
-          <MoreHorizontal className="h-3.5 w-3.5" />
+          <MoreHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
         </button>
 
         {menuOpen && (

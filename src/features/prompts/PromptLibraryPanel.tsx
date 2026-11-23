@@ -93,11 +93,24 @@ export function PromptLibraryPanel({ onSelect }: { onSelect: (content: string) =
               <p className="mt-0.5 truncate text-xs text-gray-500">{p.content.slice(0, 80)}</p>
             </button>
             <div className="flex shrink-0 items-center gap-1 opacity-0 group-hover:opacity-100">
-              <button onClick={() => togglePin(p.id)} className={p.is_pinned ? 'text-yellow-400' : 'text-gray-500 hover:text-white'}>
-                <Pin className="h-3.5 w-3.5" />
+              <button
+                type="button"
+                onClick={() => togglePin(p.id)}
+                aria-label={p.is_pinned ? `Unpin ${p.title}` : `Pin ${p.title}`}
+                aria-pressed={!!p.is_pinned}
+                title={p.is_pinned ? 'Unpin prompt' : 'Pin prompt'}
+                className={`rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-potato-500 ${p.is_pinned ? 'text-yellow-400' : 'text-gray-500 hover:text-white'}`}
+              >
+                <Pin className="h-3.5 w-3.5" aria-hidden="true" />
               </button>
-              <button onClick={() => deletePrompt(p.id)} className="text-gray-500 hover:text-red-400">
-                <Trash2 className="h-3.5 w-3.5" />
+              <button
+                type="button"
+                onClick={() => deletePrompt(p.id)}
+                aria-label={`Delete ${p.title}`}
+                title="Delete prompt"
+                className="rounded text-gray-500 hover:text-red-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-potato-500"
+              >
+                <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
               </button>
             </div>
           </div>

@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import { clsx } from 'clsx';
 import type { ButtonHTMLAttributes } from 'react';
 
@@ -7,9 +8,13 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   loading?: boolean;
 }
 
-export function Button({ variant = 'primary', size = 'md', loading, className, children, disabled, ...props }: ButtonProps) {
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
+  { variant = 'primary', size = 'md', loading, className, children, disabled, ...props },
+  ref,
+) {
   return (
     <button
+      ref={ref}
       {...props}
       disabled={disabled || loading}
       className={clsx(
@@ -29,4 +34,4 @@ export function Button({ variant = 'primary', size = 'md', loading, className, c
       {loading ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" /> : children}
     </button>
   );
-}
+});

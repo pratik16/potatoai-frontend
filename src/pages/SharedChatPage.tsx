@@ -105,6 +105,7 @@ export default function SharedChatPage() {
               is_branch_root:   false,
               created_at:       msg.created_at,
             }}
+            readOnly
           />
         ))}
       </div>
